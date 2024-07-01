@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import * as path from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserController } from './user/user.controller';
-import { UserService } from './user/user.service';
+import { User } from './user/user.entity';
+import { AuthModule } from './auth/auth.module';
+
+import { CommentModule } from './comment/comment.module';
+import { SwTypeModule } from './sw-type/sw-type.module';
+import { UsersModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -14,6 +17,9 @@ import { UserService } from './user/user.service';
       envFilePath: `env/${process.env.NODE_ENV}.env`,
       isGlobal: true,
     }),
+    UsersModule,
+    SwTypeModule,
+
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -25,15 +31,23 @@ import { UserService } from './user/user.service';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         entities: [
-          path.join(__dirname, 'src/entities/**/*.entity.{js, ts}'),
+          User,
+
         ],
-        synchronize: false,
+        autoLoadEntities: true,
+        synchronize: true,
         logging: true,
         timezone: 'local',
       }),
-    })
+    }),
+
+    AuthModule,
+
+    CommentModule,
+
+    SwTypeModule
   ],
-  controllers: [AppController, UserController],
-  providers: [AppService, UserService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule { }
