@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,16 +10,18 @@ import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
 import { SwTypeModule } from './sw-type/sw-type.module';
 import { UsersModule } from './user/user.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './guard/auth.guard';
+import { RolesGuard } from './guard/role.guard';
+import { JwtModule } from '@nestjs/jwt';
 
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: `env/${process.env.NODE_ENV}.env`,
       isGlobal: true,
     }),
-    UsersModule,
-    SwTypeModule,
-
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -30,24 +32,28 @@ import { UsersModule } from './user/user.module';
         database: configService.get('POSTGRES_DB'),
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
-        entities: [
-          User,
-
-        ],
+        entities: [User],
         autoLoadEntities: true,
         synchronize: true,
         logging: true,
         timezone: 'local',
       }),
     }),
-
     AuthModule,
+    UsersModule,
+    SwTypeModule,
 
     CommentModule,
 
-    SwTypeModule
+    SwTypeModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
-export class AppModule { }
+export class AppModule {}

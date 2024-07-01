@@ -1,12 +1,19 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
-import { SwType } from "../sw-type/sw-type.entity";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
+import { SwType } from '../sw-type/sw-type.entity';
+import { E_Role } from 'src/enum';
 
-
-@Entity({ name: "users", schema: "public", synchronize: true, })
-@Unique(["email"])
+@Entity({ name: 'users', schema: 'public', synchronize: true })
+@Unique(['email'])
 export class User {
-
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -15,19 +22,18 @@ export class User {
   @Column()
   email: string;
 
-  @Column({ default: "tester" })
-  role: string;
+  @Column({ default: E_Role.tester, type: 'enum', enum: E_Role })
+  role: E_Role;
 
   @Column({ select: false })
   pw: string;
 
   @CreateDateColumn()
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date
+  updatedAt: Date;
 
-
-  @OneToMany(type => SwType, swType => swType.user)
-  swTypes: SwType[]
+  @OneToMany((type) => SwType, (swType) => swType.user)
+  swTypes: SwType[];
 }

@@ -12,38 +12,51 @@ import * as bcrypt from 'bcrypt';
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly configService: ConfigService
-  ) { }
+    private readonly configService: ConfigService,
+  ) {}
 
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
   }
 
   async findOneById(id: string): Promise<User> {
-    const foundUser = await this.userRepository.findOneByUUID(id)
+    const foundUser = await this.userRepository.findOneByUUID(id);
     return foundUser;
   }
 
   async findOneByEmail(email: string): Promise<User> {
     const foundUserByEmail = await this.userRepository.findOne({
       where: { email },
-      select: ['id', 'username', 'email', 'role', 'pw']
-    })
+      select: ['id', 'username', 'email', 'role', 'pw'],
+    });
 
     return foundUserByEmail;
   }
 
+  async create(user: CreateUserDto): Promise<User> {
+    const hashedPw = await bcrypt.hash(
+      user.pw,
+      Number(this.configService.get('BCRYPT_SALT')),
+    );
+    const createdUser = await this.userRepository.createUser({
+      ...user,
+      pw: hashedPw,
+    });
 
-  async create(user: CreateUserDto): Promise<void> {
-    const hashedPw = await bcrypt.hash(user.pw, Number(this.configService.get("BCRYPT_SALT")));
-    return this.userRepository.createUser({ ...user, pw: hashedPw })
+    delete createdUser.pw;
+
+    return createdUser;
   }
 
   async updateUserById(id: string, user: UpdateUserDto): Promise<UpdateResult> {
-    const hashedPw = await bcrypt.hash(user.pw, Number(this.configService.get("BCRYPT_SALT")));
-    return this.userRepository.update(id, {
+    const hashedPw = await bcrypt.hash(
+      user.pw,
+      Number(this.configService.get('BCRYPT_SALT')),
+    );
+    const updatedUser = {
       ...user,
-      ...(user.pw && { pw: hashedPw })
-    })
+      ...(user.pw && { pw: hashedPw }),
+    };
+    return this.userRepository.update(id, updatedUser);
   }
 }

@@ -1,10 +1,20 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { User } from "src/user/user.entity";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { User } from 'src/user/user.entity';
 
-@Entity({ name: "swType", schema: "public", synchronize: true })
+@Entity({ name: 'swType', schema: 'public', synchronize: true })
 export class SwType {
+  constructor(partial: Partial<SwType>) {
+    Object.assign(this, partial);
+  }
 
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   swTypeId: string;
 
   @Column()
@@ -13,14 +23,12 @@ export class SwType {
   @Column()
   typeDesc: string;
 
-
-
   @CreateDateColumn()
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date
+  updatedAt: Date;
 
-  @ManyToOne(type => User, user => user)
-  user: User
+  @ManyToOne((type) => User, (user) => user)
+  user: User;
 }
