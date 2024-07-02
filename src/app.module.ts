@@ -5,15 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './user/user.entity';
-import { AuthModule } from './auth/auth.module';
 
+import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
 import { SwTypeModule } from './sw-type/sw-type.module';
 import { UsersModule } from './user/user.module';
+import { SwVersionModule } from './sw-version/sw-version.module';
+import { TestSessionModule } from './test-session/test-session.module';
+
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './guard/auth.guard';
-import { RolesGuard } from './guard/role.guard';
-import { JwtModule } from '@nestjs/jwt';
+import { RolesGuard } from './common/guard/role.guard';
 
 @Global()
 @Module({
@@ -42,10 +43,11 @@ import { JwtModule } from '@nestjs/jwt';
     AuthModule,
     UsersModule,
     SwTypeModule,
-
     CommentModule,
 
     SwTypeModule,
+    SwVersionModule,
+    TestSessionModule,
   ],
   controllers: [AppController],
   providers: [
@@ -56,4 +58,4 @@ import { JwtModule } from '@nestjs/jwt';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

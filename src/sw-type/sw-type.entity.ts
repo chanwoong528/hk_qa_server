@@ -23,11 +23,15 @@ export class SwType {
   @Column()
   typeDesc: string;
 
+  @Column({ default: 'Y' })
+  showStatus: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
 
   @ManyToOne((type) => User, (user) => user)
   user: User;

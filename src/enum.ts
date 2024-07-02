@@ -3,3 +3,10 @@ export enum E_Role {
   admin = 'admin',
   master = 'master',
 }
+
+export enum E_TestStatus {
+  pending = 'pending',
+  passed = 'passed',
+  failed = 'failed',
+
+}

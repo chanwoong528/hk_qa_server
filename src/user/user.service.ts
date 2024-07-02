@@ -13,7 +13,7 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
@@ -49,14 +49,18 @@ export class UserService {
   }
 
   async updateUserById(id: string, user: UpdateUserDto): Promise<UpdateResult> {
-    const hashedPw = await bcrypt.hash(
-      user.pw,
-      Number(this.configService.get('BCRYPT_SALT')),
-    );
-    const updatedUser = {
-      ...user,
-      ...(user.pw && { pw: hashedPw }),
-    };
+    let updatedUser = user;
+    if (!!user.pw) {
+      const hashedPw = await bcrypt.hash(
+        user.pw,
+        Number(this.configService.get('BCRYPT_SALT')),
+      );
+      updatedUser = {
+        ...updatedUser,
+        pw: hashedPw,
+      }
+    }
+
     return this.userRepository.update(id, updatedUser);
   }
 }

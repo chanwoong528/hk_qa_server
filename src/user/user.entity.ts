@@ -34,6 +34,9 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
+
   @OneToMany((type) => SwType, (swType) => swType.user)
   swTypes: SwType[];
+
+
 }

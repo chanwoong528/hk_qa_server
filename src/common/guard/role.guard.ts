@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from 'src/decorator/roles.decorator';
+import { ROLES_KEY } from 'src/common/decorator/roles.decorator';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { E_Role } from 'src/enum';

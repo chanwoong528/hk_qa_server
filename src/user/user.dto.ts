@@ -8,6 +8,6 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-  role: E_Role;
-  pw: string;
+  role?: E_Role;
+  pw?: string;
 }
