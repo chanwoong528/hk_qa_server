@@ -1,41 +1,65 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { TestSession } from './test-session.entity';
 import { QueryFailedError, Repository, UpdateResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTestSessionDto, UpdateTestSessionDto } from './test-session.dto';
 import { UserRepository } from 'src/user/user.repository';
 import { SwVersionService } from 'src/sw-version/sw-version.service';
+import { E_TestStatus } from 'src/enum';
 
 @Injectable()
 export class TestSessionService {
-
   constructor(
     @InjectRepository(TestSession)
     private readonly testSessionRepository: Repository<TestSession>,
     private readonly userRepository: UserRepository,
     private readonly swVersionService: SwVersionService,
-
-  ) { }
+  ) {}
 
   async getTestSessions(): Promise<TestSession[]> {
     return await this.testSessionRepository.find();
   }
 
-  async getTestSessionById(testSessionId: string): Promise<TestSession> {
-    return await this.testSessionRepository.findOne({ relations: ['user'], where: { sessionId: testSessionId } });
+  async getTestSessionsBySwVersionId(swVersionId: string) {
+    return await this.testSessionRepository.find({
+      relations: ['user'],
+      where: { swVersion: { swVersionId: swVersionId } },
+    });
   }
 
-  async assignTestSession(testSession: CreateTestSessionDto, testOwnerId: string): Promise<TestSession> {
+  async getTestSessionById(testSessionId: string): Promise<TestSession> {
+    return await this.testSessionRepository.findOne({
+      relations: ['user'],
+      where: { sessionId: testSessionId },
+    });
+  }
+
+  async assignTestSession(
+    testSession: CreateTestSessionDto,
+    testOwnerId: string,
+  ): Promise<TestSession> {
     try {
-      const targetSwVersion = await this.swVersionService.getSwVersionById(testSession.swVersionId);
+      const targetSwVersion = await this.swVersionService.getSwVersionById(
+        testSession.swVersionId,
+      );
       if (!targetSwVersion) {
         throw new NotFoundException('Software Version not found');
       } // Check if the software version exists
       if (targetSwVersion.user.id !== testOwnerId) {
-        throw new UnauthorizedException('You are not the owner of the software version')
-      }// Check if the user is the owner of the software version
+        throw new UnauthorizedException(
+          'You are not the owner of the software version',
+        );
+      } // Check if the user is the owner of the software version
 
-      const tester = await this.userRepository.findOneByUUID(testSession.userId);
+      const tester = await this.userRepository.findOneByUUID(
+        testSession.userId,
+      );
       if (!tester) {
         throw new NotFoundException('User not found');
       } // Check if the user exists
@@ -45,7 +69,6 @@ export class TestSessionService {
       createdTestSession.swVersion = targetSwVersion;
 
       return await this.testSessionRepository.save(createdTestSession);
-
     } catch (error) {
       if (error instanceof QueryFailedError) {
         switch (error.driverError.code) {
@@ -57,12 +80,13 @@ export class TestSessionService {
             );
         }
       }
-      throw error
+      throw error;
     }
   }
 
   async updateTestSession(
-    testSessionId: string, testSession: UpdateTestSessionDto
+    testSessionId: string,
+    testSession: UpdateTestSessionDto,
   ): Promise<UpdateResult> {
     try {
       const targetTestSession = await this.getTestSessionById(testSessionId);
@@ -70,7 +94,15 @@ export class TestSessionService {
         throw new NotFoundException('Test Session not found');
       }
 
-      return await this.testSessionRepository.update(testSessionId, testSession);
+      const objTestSession = new TestSession(testSession);
+      if (testSession.status === E_TestStatus.passed) {
+        objTestSession.finishedAt = new Date();
+      }
+
+      return await this.testSessionRepository.update(
+        testSessionId,
+        objTestSession,
+      );
     } catch (error) {
       if (error instanceof QueryFailedError) {
         switch (error.driverError.code) {
@@ -82,12 +114,7 @@ export class TestSessionService {
             );
         }
       }
-      throw error
+      throw error;
     }
-
-
   }
-
-
-
 }
