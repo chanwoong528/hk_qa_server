@@ -10,8 +10,9 @@ import { SwVersion } from './sw-version.entity';
 import { QueryFailedError, Repository, UpdateResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/user/user.repository';
-import { CreateSwVersionDto, UpdateSwVersionDto } from './sw-version.dto';
 import { SwTypeService } from 'src/sw-type/sw-type.service';
+
+import { CreateSwVersionDto, UpdateSwVersionDto } from './sw-version.dto';
 
 @Injectable()
 export class SwVersionService {
