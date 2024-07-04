@@ -17,6 +17,8 @@ export class AuthService {
   ) { }
 
   async signIn(email: string, pwInput: string): Promise<LoggedInDto> {
+    console.log(email, pwInput)
+
     const existUser = await this.usersService.findOneByEmail(email);
     if (!existUser) {
       throw new NotFoundException('User does not exist!');
@@ -32,6 +34,7 @@ export class AuthService {
     const accToken = await this.jwtService.signAsync(payload);
 
     return {
+      id, username, role, email,
       access_token: accToken,
     };
   }
