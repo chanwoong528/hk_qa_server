@@ -12,7 +12,7 @@ import { AuthGuard } from 'src/common/guard/auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post()
   async signIn(@Body() userLoginInfo: SignInDto) {
@@ -20,8 +20,11 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('jwt-test')
+  @Get('')// login check
   async jwtTest(@Request() req) {
-    return req.user;
+    const result = await { id: req.user.sub, ...req.user };
+    delete result.sub
+
+    return result;
   }
 }
