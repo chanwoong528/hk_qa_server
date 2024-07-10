@@ -9,10 +9,14 @@ import {
 import { AuthService } from './auth.service';
 import { SignInDto } from './auth.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
+import { UserService } from 'src/user/user.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService
+  ) { }
 
   @Post()
   async signIn(@Body() userLoginInfo: SignInDto) {
@@ -22,8 +26,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @Get('')// login check
   async jwtTest(@Request() req) {
-    const result = await { id: req.user.sub, ...req.user };
-    delete result.sub
+    const result = await this.userService.findOneById(req.user.sub);
 
     return result;
   }

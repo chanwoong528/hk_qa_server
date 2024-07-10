@@ -15,7 +15,7 @@ import { UpdateResult } from 'typeorm';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get()
   getUsers(): Promise<User[]> {
@@ -43,7 +43,6 @@ export class UserController {
     @Body() user: UpdateUserDto,
   ): Promise<UpdateResult> {
     const updatedResult = await this.userService.updateUserById(id, user);
-
     if (updatedResult.affected === 0) {
       throw new NotFoundException('User does not exist!');
     }
