@@ -3,12 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { SwType } from 'src/sw-type/sw-type.entity';
+import { TestSession } from 'src/test-session/test-session.entity';
 
 @Entity({ name: 'swVersion', schema: 'public', synchronize: true })
 @Unique(['versionTitle'])
@@ -44,4 +46,8 @@ export class SwVersion {
 
   @ManyToOne((type) => SwType, (swType) => swType)
   swType: SwType;
+
+  @OneToMany((type) => TestSession, (testSession) => testSession.swVersion)
+  testSessions: TestSession[];
+
 }

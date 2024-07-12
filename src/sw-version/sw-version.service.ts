@@ -21,12 +21,12 @@ export class SwVersionService {
     private readonly swVersionRepository: Repository<SwVersion>,
     private readonly userRepository: UserRepository,
     private readonly swTypeService: SwTypeService,
-  ) {}
+  ) { }
 
   //GET_ALL based on swType
   async getSwVersions(swTypeId: string): Promise<SwVersion[]> {
     return await this.swVersionRepository.find({
-      relations: ['swType', 'user'],
+      relations: ['swType', 'user', 'testSessions'],
       where: { swType: { swTypeId: swTypeId } },
     });
   }
