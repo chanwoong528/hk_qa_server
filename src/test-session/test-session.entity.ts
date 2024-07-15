@@ -38,7 +38,7 @@ export class TestSession {
   @Column({ type: 'timestamptz', nullable: true, default: null })
   finishedAt: Date;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, user => user, { eager: true })
   @JoinColumn()
   user: User
 

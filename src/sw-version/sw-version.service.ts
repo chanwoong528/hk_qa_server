@@ -26,7 +26,7 @@ export class SwVersionService {
   //GET_ALL based on swType
   async getSwVersions(swTypeId: string): Promise<SwVersion[]> {
     return await this.swVersionRepository.find({
-      relations: ['swType', 'user', 'testSessions'],
+      relations: ['swType', 'user', 'testSessions', 'user'],
       where: { swType: { swTypeId: swTypeId } },
     });
   }
