@@ -14,7 +14,7 @@ import { SwVersion } from 'src/sw-version/sw-version.entity';
 import { E_TestStatus } from 'src/enum';
 
 @Entity({ name: 'testSession', schema: 'public', synchronize: true })
-@Unique(['swVersion', 'user'])
+@Unique(['swVersion', 'user.id'])
 export class TestSession {
   constructor(partial?: Partial<TestSession>) {
     if (!!partial) {
@@ -38,7 +38,7 @@ export class TestSession {
   @Column({ type: 'timestamptz', nullable: true, default: null })
   finishedAt: Date;
 
-  @OneToOne(() => User, user => user, { eager: true })
+  @ManyToOne(() => User, user => user, { eager: true })
   @JoinColumn()
   user: User
 

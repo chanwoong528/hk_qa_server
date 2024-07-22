@@ -12,5 +12,8 @@ export class CreateTestSessionDto {
 
 export class UpdateTestSessionDto {
   status: E_TestStatus;
-
+}
+export class PutTestSessionListDto {
+  tobeDeletedArr?: string[]
+  tobeAddedArr?: string[]
 }

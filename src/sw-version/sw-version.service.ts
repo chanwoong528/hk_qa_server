@@ -28,6 +28,7 @@ export class SwVersionService {
     return await this.swVersionRepository.find({
       relations: ['swType', 'user', 'testSessions', 'user'],
       where: { swType: { swTypeId: swTypeId } },
+      order:{createdAt:"DESC"}
     });
   }
 

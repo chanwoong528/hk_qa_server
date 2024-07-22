@@ -1,7 +1,7 @@
 import {
   Body,
   Controller,
-  Get,
+  Get, Put,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -11,13 +11,13 @@ import {
 } from '@nestjs/common';
 import { TestSessionService } from './test-session.service';
 import { TestSession } from './test-session.entity';
-import { CreateTestSessionDto, UpdateTestSessionDto } from './test-session.dto';
+import { CreateTestSessionDto, PutTestSessionListDto, UpdateTestSessionDto } from './test-session.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { UpdateResult } from 'typeorm';
 
 @Controller('test-session')
 export class TestSessionController {
-  constructor(private readonly testSessionService: TestSessionService) {}
+  constructor(private readonly testSessionService: TestSessionService) { }
 
   @Get()
   async getTestSessions(): Promise<TestSession[]> {
@@ -57,5 +57,23 @@ export class TestSessionController {
       testSessionId,
       testSession,
     );
+  }
+
+  @Put(':swVersionId')
+  @UseGuards(AuthGuard)
+  async deleteOrAddTestSessions(
+    @Param('swVersionId', ParseUUIDPipe) swVersionId: string,
+    @Body() testSession: PutTestSessionListDto,
+  ): Promise<void> {
+    console.log(swVersionId)
+    console.log(testSession)
+
+    const repoResult = await this.testSessionService.deleteOrAddTestSessions(
+      swVersionId,
+      testSession,
+    );
+    console.log("controller >> ", repoResult)
+
+    return repoResult;
   }
 }

@@ -6,9 +6,9 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { TestSession } from './test-session.entity';
-import { QueryFailedError, Repository, UpdateResult } from 'typeorm';
+import { QueryFailedError, Repository, UpdateResult, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateTestSessionDto, UpdateTestSessionDto } from './test-session.dto';
+import { CreateTestSessionDto, PutTestSessionListDto, UpdateTestSessionDto } from './test-session.dto';
 import { UserRepository } from 'src/user/user.repository';
 import { SwVersionService } from 'src/sw-version/sw-version.service';
 import { E_TestStatus } from 'src/enum';
@@ -20,7 +20,7 @@ export class TestSessionService {
     private readonly testSessionRepository: Repository<TestSession>,
     private readonly userRepository: UserRepository,
     private readonly swVersionService: SwVersionService,
-  ) {}
+  ) { }
 
   async getTestSessions(): Promise<TestSession[]> {
     return await this.testSessionRepository.find();
@@ -114,6 +114,48 @@ export class TestSessionService {
             );
         }
       }
+      throw error;
+    }
+  }
+  async deleteOrAddTestSessions(
+    swVersionId: string,
+    testSession: PutTestSessionListDto
+  ): Promise<any> {
+    try {
+      const targetSwVersion = await this.swVersionService.getSwVersionById(
+        swVersionId,
+      );
+      if (!targetSwVersion) {
+        throw new NotFoundException('Software Version not found');
+      } // Check if the software version exists
+
+      const promiseArr = []
+
+      if (testSession.tobeDeletedArr) {
+        const deletePromise = await this.testSessionRepository
+          .delete({ swVersion: { swVersionId }, user: { id: In(testSession.tobeDeletedArr) } });
+        promiseArr.push(deletePromise)
+      }
+      if (testSession.tobeAddedArr) {
+        const addPromise = testSession.tobeAddedArr.map(async (userId) => {
+          const tester = await this.userRepository.findOneByUUID(userId);
+          if (!tester) {
+            throw new NotFoundException('User not found');
+          } // Check if the user exists
+          let createdTestSession = new TestSession();
+          createdTestSession.user = tester;
+          createdTestSession.swVersion = targetSwVersion;
+          return await this.testSessionRepository.save(createdTestSession);
+        });
+
+        promiseArr.push(await Promise.all(addPromise))
+      }
+      const result = await Promise.all(promiseArr)
+      console.log("service ", result)
+      return result
+    }
+    catch (error) {
+      console.log(error)
       throw error;
     }
   }
