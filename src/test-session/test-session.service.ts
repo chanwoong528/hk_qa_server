@@ -12,6 +12,8 @@ import { CreateTestSessionDto, PutTestSessionListDto, UpdateTestSessionDto } fro
 import { UserRepository } from 'src/user/user.repository';
 import { SwVersionService } from 'src/sw-version/sw-version.service';
 import { E_TestStatus } from 'src/enum';
+import { User } from 'src/user/user.entity';
+import { SwVersion } from 'src/sw-version/sw-version.entity';
 
 @Injectable()
 export class TestSessionService {
@@ -122,13 +124,7 @@ export class TestSessionService {
     testSession: PutTestSessionListDto
   ): Promise<any> {
     try {
-      const targetSwVersion = await this.swVersionService.getSwVersionById(
-        swVersionId,
-      );
-      if (!targetSwVersion) {
-        throw new NotFoundException('Software Version not found');
-      } // Check if the software version exists
-
+      const targetSwVersion = new SwVersion({ swVersionId: swVersionId })
       const promiseArr = []
 
       if (testSession.tobeDeletedArr) {
@@ -138,12 +134,9 @@ export class TestSessionService {
       }
       if (testSession.tobeAddedArr) {
         const addPromise = testSession.tobeAddedArr.map(async (userId) => {
-          const tester = await this.userRepository.findOneByUUID(userId);
-          if (!tester) {
-            throw new NotFoundException('User not found');
-          } // Check if the user exists
+          const newTester = new User({ id: userId });
           let createdTestSession = new TestSession();
-          createdTestSession.user = tester;
+          createdTestSession.user = newTester;
           createdTestSession.swVersion = targetSwVersion;
           return await this.testSessionRepository.save(createdTestSession);
         });
@@ -151,11 +144,19 @@ export class TestSessionService {
         promiseArr.push(await Promise.all(addPromise))
       }
       const result = await Promise.all(promiseArr)
-      console.log("service ", result)
       return result
     }
     catch (error) {
-      console.log(error)
+      if (error instanceof QueryFailedError) {
+        switch (error.driverError.code) {
+          case '23505':
+            throw new ConflictException('Test already Assign to same user');
+          case '22P02':
+            throw new UnprocessableEntityException(
+              `Invalid input: ${error.message}`,
+            );
+        }
+      }
       throw error;
     }
   }

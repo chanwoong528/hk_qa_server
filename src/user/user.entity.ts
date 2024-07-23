@@ -13,6 +13,13 @@ import { E_Role } from 'src/enum';
 @Entity({ name: 'users', schema: 'public', synchronize: true })
 @Unique(['email'])
 export class User {
+
+  constructor(partial?: Partial<User>) {
+    if (!!partial) {
+      Object.assign(this, partial);
+    }
+  }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

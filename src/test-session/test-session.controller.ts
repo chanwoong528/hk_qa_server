@@ -32,13 +32,14 @@ export class TestSessionController {
     );
   }
 
+  //TODO: TBD
   @Post()
   @UseGuards(AuthGuard)
   async creteTestSessionWithVersionID(
     @Body() testParam: CreateTestSessionDto,
     @Request() req,
   ): Promise<TestSession> {
-    console.log('@#!#!@$!#$!#');
+
     const { sub } = req.user;
 
     return await this.testSessionService.assignTestSession(
@@ -59,20 +60,18 @@ export class TestSessionController {
     );
   }
 
+  //TODO: put -> post consider pathname as RESTFUL
   @Put(':swVersionId')
   @UseGuards(AuthGuard)
   async deleteOrAddTestSessions(
     @Param('swVersionId', ParseUUIDPipe) swVersionId: string,
     @Body() testSession: PutTestSessionListDto,
   ): Promise<void> {
-    console.log(swVersionId)
-    console.log(testSession)
 
     const repoResult = await this.testSessionService.deleteOrAddTestSessions(
       swVersionId,
       testSession,
     );
-    console.log("controller >> ", repoResult)
 
     return repoResult;
   }
