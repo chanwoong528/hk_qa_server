@@ -7,18 +7,28 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { UpdateResult } from 'typeorm';
+import { AuthGuard } from 'src/common/guard/auth.guard';
+import { Roles } from 'src/common/decorator/roles.decorator';
+import { E_Role } from 'src/enum';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
   @Get()
-  getUsers(): Promise<User[]> {
+  @UseGuards(AuthGuard)
+  getUsers(@Query('getType') getType): Promise<User[]> {
+    console.log(getType);
+    if (getType === 'all') {
+      return this.userService.findAll(getType);
+    }
     return this.userService.findAll();
   }
 
@@ -33,7 +43,10 @@ export class UserController {
   }
 
   @Post()
+  @Roles(E_Role.master)
+  @UseGuards(AuthGuard)
   async createUser(@Body() user: CreateUserDto): Promise<User> {
+    //TODO: have to send verification Email
     return await this.userService.create(user);
   }
 

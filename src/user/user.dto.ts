@@ -4,7 +4,7 @@ export class CreateUserDto {
   username: string;
   email: string;
   role: E_Role;
-  pw: string;
+  pw?: string;
 }
 
 export class UpdateUserDto {

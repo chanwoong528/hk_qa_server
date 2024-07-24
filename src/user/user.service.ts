@@ -7,6 +7,7 @@ import { UpdateResult } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 
 import * as bcrypt from 'bcrypt';
+import { E_UserStatus } from 'src/enum';
 
 @Injectable()
 export class UserService {
@@ -15,8 +16,11 @@ export class UserService {
     private readonly configService: ConfigService,
   ) { }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAll(type?: string): Promise<User[]> {
+    if (type === 'all') {
+      return this.userRepository.find();
+    }
+    return this.userRepository.find({ where: { userStatus: E_UserStatus.ok } });
   }
 
   async findOneById(id: string): Promise<User> {
@@ -34,8 +38,9 @@ export class UserService {
   }
 
   async create(user: CreateUserDto): Promise<User> {
+
     const hashedPw = await bcrypt.hash(
-      user.pw,
+      "123456",
       Number(this.configService.get('BCRYPT_SALT')),
     );
     const createdUser = await this.userRepository.createUser({

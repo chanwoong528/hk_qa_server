@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { SwType } from '../sw-type/sw-type.entity';
-import { E_Role } from 'src/enum';
+import { E_Role, E_UserStatus } from 'src/enum';
 
 @Entity({ name: 'users', schema: 'public', synchronize: true })
 @Unique(['email'])
@@ -32,8 +32,11 @@ export class User {
   @Column({ default: E_Role.tester, type: 'enum', enum: E_Role })
   role: E_Role;
 
-  @Column({ select: false })
+  @Column({ default: "123456", select: false })
   pw: string;
+
+  @Column({ default: E_UserStatus.pending, type: 'enum', enum: E_UserStatus })
+  userStatus: E_UserStatus;
 
   @CreateDateColumn()
   createdAt: Date;
