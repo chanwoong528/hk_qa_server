@@ -13,7 +13,7 @@ import { SwType } from 'src/sw-type/sw-type.entity';
 import { TestSession } from 'src/test-session/test-session.entity';
 
 @Entity({ name: 'swVersion', schema: 'public', synchronize: true })
-@Unique(['versionTitle'])
+@Unique(['versionTitle', 'swType'])
 export class SwVersion {
   constructor(partial?: Partial<SwVersion>) {
     Object.assign(this, partial);
