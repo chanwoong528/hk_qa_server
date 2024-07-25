@@ -22,6 +22,7 @@ export class AuthService {
       throw new NotFoundException('User does not exist!');
     }
 
+    const isPwDefault = await bcrypt.compare("123456", existUser?.pw);
     const isPwMatch = await bcrypt.compare(pwInput, existUser?.pw);
     if (!isPwMatch) {
       throw new UnauthorizedException();
@@ -33,6 +34,7 @@ export class AuthService {
 
     return {
       id, username, role, email,
+      isPwDefault: isPwDefault,
       access_token: accToken,
     };
   }

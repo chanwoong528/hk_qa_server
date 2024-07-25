@@ -11,4 +11,5 @@ export class LoggedInDto {
   id: string;
   username: string;
   role: E_Role
+  isPwDefault?: boolean;
 }

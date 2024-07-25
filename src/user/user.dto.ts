@@ -1,4 +1,4 @@
-import { E_Role } from 'src/enum';
+import { E_Role, E_UserStatus } from 'src/enum';
 
 export class CreateUserDto {
   username: string;
@@ -10,4 +10,5 @@ export class CreateUserDto {
 export class UpdateUserDto {
   role?: E_Role;
   pw?: string;
+  userStatus?: E_UserStatus;
 }

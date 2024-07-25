@@ -5,6 +5,7 @@ import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { User } from './user.entity';
 import { UpdateResult } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 import * as bcrypt from 'bcrypt';
 import { E_UserStatus } from 'src/enum';
@@ -14,6 +15,7 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) { }
 
   async findAll(type?: string): Promise<User[]> {
@@ -37,7 +39,7 @@ export class UserService {
     return foundUserByEmail;
   }
 
-  async create(user: CreateUserDto): Promise<User> {
+  async create(user: CreateUserDto): Promise<User & { verificationToken: string }> {
 
     const hashedPw = await bcrypt.hash(
       "123456",
@@ -49,8 +51,13 @@ export class UserService {
     });
 
     delete createdUser.pw;
+    const verificationToken = await this.jwtService.signAsync({ id: createdUser.id, }, {
+      expiresIn: "1d",
+      secret: this.configService.get('JWT_SECRET'),
+    }
+    );
 
-    return createdUser;
+    return { ...createdUser, verificationToken: verificationToken };
   }
 
   async updateUserById(id: string, user: UpdateUserDto): Promise<UpdateResult> {

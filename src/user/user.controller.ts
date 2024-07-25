@@ -10,17 +10,23 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { UpdateResult } from 'typeorm';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { Roles } from 'src/common/decorator/roles.decorator';
 import { E_Role } from 'src/enum';
+import { UserService } from './user.service';
+import { MailService } from 'src/mail/mail.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(
+    private readonly userService: UserService,
+    private readonly mailService: MailService,
+    private readonly jwtService: JwtService,
+  ) { }
 
   @Get()
   @UseGuards(AuthGuard)
@@ -47,7 +53,12 @@ export class UserController {
   @UseGuards(AuthGuard)
   async createUser(@Body() user: CreateUserDto): Promise<User> {
     //TODO: have to send verification Email
-    return await this.userService.create(user);
+
+    const createdUser = await this.userService.create(user);
+
+    this.mailService.sendVerficationMail(createdUser, createdUser.verificationToken);
+
+    return createdUser
   }
 
   @Patch(':id')
