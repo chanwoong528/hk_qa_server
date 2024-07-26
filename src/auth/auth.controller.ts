@@ -33,7 +33,6 @@ export class AuthController {
   @Get('')// login check
   async jwtTest(@Request() req) {
     const result = await this.userService.findOneById(req.user.sub);
-
     return result;
   }
 

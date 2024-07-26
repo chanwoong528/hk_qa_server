@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -42,6 +43,7 @@ export class TestSession {
   @JoinColumn()
   user: User
 
-  @ManyToOne(() => SwVersion, (swVersion) => swVersion)
+  @ManyToOne(() => SwVersion, (swVersion) => swVersion, { eager: true, cascade: true, })
+  @JoinTable()
   swVersion: SwVersion;
 }

@@ -25,9 +25,11 @@ export class UserService {
     return this.userRepository.find({ where: { userStatus: E_UserStatus.ok } });
   }
 
-  async findOneById(id: string): Promise<User> {
+  async findOneById(id: string): Promise<User & { isPwDefault?: boolean }> {
     const foundUser = await this.userRepository.findOneByUUID(id);
-    return foundUser;
+    const isPwDefault = await bcrypt.compare("123456", foundUser.pw);
+
+    return { ...foundUser, isPwDefault: isPwDefault };
   }
 
   async findOneByEmail(email: string): Promise<User> {

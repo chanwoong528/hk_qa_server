@@ -10,22 +10,9 @@ export class MailService {
     private configService: ConfigService
   ) { }
 
-  public sendVerficationMail(user: User, token: string): void {
-    this.mailerService.sendMail({
-      to: user.email,
-      from: this.configService.get<string>('MAIL_USER'),
-      subject:
-        '[HK-QA] Please verify your email address',
-      template: "verifyUserConfirmation",
-      context: {
-        username: user.username,
-        token: token
-      },
-    })
-  }
 
 
-  public sendSignUpCongratMail(to: string): void {
+  sendSignUpCongratMail(to: string): void {
     this.mailerService
       .sendMail({
         to,
@@ -42,4 +29,35 @@ export class MailService {
         console.log(error);
       });
   }
+  sendVerficationMail(user: User, token: string): void {
+    this.mailerService.sendMail({
+      to: user.email,
+      from: this.configService.get<string>('MAIL_USER'),
+      subject:
+        '[HK-QA] Please verify your email address',
+      template: "verifyUserConfirmation",
+      context: {
+        username: user.username,
+        token: token
+      },
+    })
+  }
+  sendAddedAsTesterMail(to: string): void {
+    this.mailerService.sendMail({
+      to: to,
+      from: this.configService.get<string>('MAIL_USER'),
+      subject:
+        '[HK-QA] Please verify your email address',
+      template: "verifyUserConfirmation",
+      context: {
+        username: to,
+      },
+    })
+
+
+  }
+
+
+
+
 }

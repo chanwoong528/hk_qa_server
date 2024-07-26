@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { DataSource, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, EntityManager, QueryFailedError, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './user.dto';
 
@@ -13,9 +13,13 @@ export class UserRepository extends Repository<User> {
   constructor(private readonly dataSource: DataSource) {
     super(User, dataSource.createEntityManager());
   }
-
+  getCols<T>(repository: Repository<T>): (keyof T)[] {
+    return (repository.metadata.columns.map(col => col.propertyName) as (keyof T)[]);
+  }
   async findOneByUUID(id: string): Promise<User> {
-    return await this.findOneBy({ id });
+
+
+    return await this.findOne({ where: { id }, select: this.getCols(this) });
   }
 
   async createUser(user: CreateUserDto): Promise<User> {

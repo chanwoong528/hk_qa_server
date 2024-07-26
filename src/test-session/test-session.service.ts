@@ -14,6 +14,7 @@ import { SwVersionService } from 'src/sw-version/sw-version.service';
 import { E_TestStatus } from 'src/enum';
 import { User } from 'src/user/user.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class TestSessionService {
@@ -22,6 +23,7 @@ export class TestSessionService {
     private readonly testSessionRepository: Repository<TestSession>,
     private readonly userRepository: UserRepository,
     private readonly swVersionService: SwVersionService,
+    private readonly mailService: MailService,
   ) { }
 
   async getTestSessions(): Promise<TestSession[]> {
@@ -138,12 +140,24 @@ export class TestSessionService {
           let createdTestSession = new TestSession();
           createdTestSession.user = newTester;
           createdTestSession.swVersion = targetSwVersion;
-          return await this.testSessionRepository.save(createdTestSession);
+          const addedTester = await this.testSessionRepository.createQueryBuilder('testSession').insert().into(TestSession).values(createdTestSession).returning('*').execute();
+
+          return addedTester;
         });
 
+
+
         promiseArr.push(await Promise.all(addPromise))
+        addPromise.forEach(async (addedTester) => {
+          //TODO: 
+          console.log(((await addedTester)))
+          // const email = (await addedTester).user.email
+          // const swTypeId = (await addedTester).swVersion
+          // console.log(email, swTypeId)
+        })
       }
       const result = await Promise.all(promiseArr)
+
       return result
     }
     catch (error) {
