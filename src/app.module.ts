@@ -16,6 +16,7 @@ import { TestSessionModule } from './test-session/test-session.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guard/role.guard';
 import { MailModule } from './mail/mail.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Global()
 @Module({
@@ -50,6 +51,7 @@ import { MailModule } from './mail/mail.module';
     SwVersionModule,
     TestSessionModule,
     MailModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [

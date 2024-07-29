@@ -56,7 +56,7 @@ export class UserController {
 
     const createdUser = await this.userService.create(user);
 
-    this.mailService.sendVerficationMail(createdUser, createdUser.verificationToken);
+    this.mailService.sendVerificationMail(createdUser, createdUser.verificationToken);
 
     return createdUser
   }

@@ -126,7 +126,7 @@ export class TestSessionService {
     testSession: PutTestSessionListDto
   ): Promise<any> {
     try {
-      const targetSwVersion = new SwVersion({ swVersionId: swVersionId })
+      const targetSwVersion = await this.swVersionService.getSwVersionById(swVersionId);
       const promiseArr = []
 
       if (testSession.tobeDeletedArr) {
@@ -136,24 +136,22 @@ export class TestSessionService {
       }
       if (testSession.tobeAddedArr) {
         const addPromise = testSession.tobeAddedArr.map(async (userId) => {
-          const newTester = new User({ id: userId });
+          const newTester = await this.userRepository.findOneByUUID(userId);
           let createdTestSession = new TestSession();
           createdTestSession.user = newTester;
           createdTestSession.swVersion = targetSwVersion;
-          const addedTester = await this.testSessionRepository.createQueryBuilder('testSession').insert().into(TestSession).values(createdTestSession).returning('*').execute();
-
+          const addedTester = await this.testSessionRepository.save(createdTestSession);
           return addedTester;
         });
-
-
 
         promiseArr.push(await Promise.all(addPromise))
         addPromise.forEach(async (addedTester) => {
           //TODO: 
-          console.log(((await addedTester)))
-          // const email = (await addedTester).user.email
-          // const swTypeId = (await addedTester).swVersion
-          // console.log(email, swTypeId)
+
+          const receiverInfo = (await addedTester).user
+          const swVersion = (await addedTester).swVersion
+          this.mailService.sendAddedAsTesterMail(receiverInfo, swVersion)
+
         })
       }
       const result = await Promise.all(promiseArr)

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/user/user.entity';
+import { SwVersion } from 'src/sw-version/sw-version.entity';
 
 @Injectable()
 export class MailService {
@@ -10,26 +11,7 @@ export class MailService {
     private configService: ConfigService
   ) { }
 
-
-
-  sendSignUpCongratMail(to: string): void {
-    this.mailerService
-      .sendMail({
-        to,
-        from: this.configService.get<string>('MAIL_USER'),
-        subject:
-          '[tellmeaboutyourcareer] Congratulations on signing up for Our service!',
-        text: 'welcome'
-        // html: '<b>welcome</b>' // HTML body content
-      })
-      .then((result) => {
-        console.log(result);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
-  sendVerficationMail(user: User, token: string): void {
+  sendVerificationMail(user: User, token: string): void {
     this.mailerService.sendMail({
       to: user.email,
       from: this.configService.get<string>('MAIL_USER'),
@@ -38,23 +20,24 @@ export class MailService {
       template: "verifyUserConfirmation",
       context: {
         username: user.username,
-        token: token
+        token: token,
+        homepageUrl: this.configService.get<string>('HOMEPAGE_URL')
       },
     })
   }
-  sendAddedAsTesterMail(to: string): void {
+  sendAddedAsTesterMail(receiver: User, swInfo: SwVersion): void {
     this.mailerService.sendMail({
-      to: to,
+      to: receiver.email,
       from: this.configService.get<string>('MAIL_USER'),
       subject:
-        '[HK-QA] Please verify your email address',
-      template: "verifyUserConfirmation",
+        '[HK-QA] You have been added as a tester',
+      template: "addedAsTester",
       context: {
-        username: to,
+        username: receiver.username,
+        swInfo: swInfo,
+        homepageUrl: this.configService.get<string>('HOMEPAGE_URL')
       },
     })
-
-
   }
 
 
