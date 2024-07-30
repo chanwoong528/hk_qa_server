@@ -13,6 +13,8 @@ import { UserRepository } from 'src/user/user.repository';
 import { SwTypeService } from 'src/sw-type/sw-type.service';
 
 import { CreateSwVersionDto, UpdateSwVersionDto } from './sw-version.dto';
+import * as jsdom from 'jsdom';
+import { UploadsService } from 'src/uploads/uploads.service';
 
 @Injectable()
 export class SwVersionService {
@@ -21,6 +23,7 @@ export class SwVersionService {
     private readonly swVersionRepository: Repository<SwVersion>,
     private readonly userRepository: UserRepository,
     private readonly swTypeService: SwTypeService,
+    private readonly uploadsService: UploadsService
   ) { }
 
   //GET_ALL based on swType
@@ -28,7 +31,7 @@ export class SwVersionService {
     return await this.swVersionRepository.find({
       relations: ['swType', 'user', 'testSessions', 'user'],
       where: { swType: { swTypeId: swTypeId } },
-      order:{createdAt:"DESC"}
+      order: { createdAt: "DESC" }
     });
   }
 
@@ -59,6 +62,21 @@ export class SwVersionService {
       let createdSwVersion = new SwVersion(swVersion);
       createdSwVersion.user = author;
       createdSwVersion.swType = targetSwType;
+
+      const { JSDOM } = jsdom;
+      const dom = new JSDOM(swVersion.versionDesc,
+        {
+          contentType: "text/html", includeNodeLocations: true,
+        }
+      );
+      const document = dom.window.document;
+      const imgElements = document.querySelectorAll("img");
+      for (const editorImg of imgElements) {
+        const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(editorImg.src);
+        editorImg.src = uploadedImg;
+      }
+      const updatedHtmlContent = document.body.innerHTML;
+      createdSwVersion.versionDesc = updatedHtmlContent;
 
       return await this.swVersionRepository.save(createdSwVersion);
     } catch (error) {
