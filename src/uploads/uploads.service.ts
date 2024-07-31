@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as AWS from 'aws-sdk'
 import axios from 'axios';
-
+import * as sharp from 'sharp'
 
 @Injectable()
 export class UploadsService {
@@ -30,7 +30,7 @@ export class UploadsService {
       throw new Error('upload failed');
     }
   }
-  async uploadImageFromTextEditor(base64: string): Promise<string> {
+  async uploadImageFromTextEditor(base64: string, size?: { w: number, h: number }): Promise<string> {
     AWS.config.update({
       credentials: {
         accessKeyId: this.configService.get('AWS_ACCESS_KEY'),
@@ -38,13 +38,15 @@ export class UploadsService {
       },
     });
     try {
-      const imgFile = await this.base64ToFile(base64)
+      const isEmptySize = Object.keys(size).length === 0;
+      const imgFile = await this.base64ToFile(!!isEmptySize ? base64 : await this.resizeBase64GivenWandH(base64, size.w, size.h));
+
       const upload = await new AWS.S3()
         .upload({
           Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
           Key: this.configService.get('AWS_S3_IMG_FOLDER') + 'default' + Date.now() +
             imgFile.type.replace('image/', '.'),
-          // Body: Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ""), 'base64')
+
           Body: imgFile.file
         }).promise();
 
@@ -101,18 +103,27 @@ export class UploadsService {
       return null;
     }
     const mimeType = mimeTypeMatch[1];
-
-    // Extract the Base64 data
     const base64Data = base64String.split(',')[1];
-
-    // Decode the Base64 string
-
-
-    // Create a Blob from the byte array with the appropriate MIME type
     const newFile = Buffer.from(base64Data, 'base64');
     return { file: newFile, type: mimeType }
   }
 
+  private async resizeBase64GivenWandH(base64String: string, width: number, height: number) {
+    try {
+      const mimeType = base64String.match(/data:(image\/\w+);base64,/)[1];
 
+      let base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+      let imgBuffer = Buffer.from(base64Data, 'base64');
+      let resizedImgBuffer = await sharp(imgBuffer)
+        .resize(width, height)
+        .toBuffer();
+      let resizedBase64 = resizedImgBuffer.toString('base64');
 
+      return `data:${mimeType};base64,${resizedBase64}`;
+
+    } catch (error) {
+      console.warn(error)
+      throw new Error('resize failed');
+    }
+  }
 }

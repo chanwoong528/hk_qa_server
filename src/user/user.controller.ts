@@ -26,6 +26,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
+
   ) { }
 
   @Get()

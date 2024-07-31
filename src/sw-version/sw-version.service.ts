@@ -72,7 +72,12 @@ export class SwVersionService {
       const document = dom.window.document;
       const imgElements = document.querySelectorAll("img");
       for (const editorImg of imgElements) {
-        const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(editorImg.src);
+
+        let imgSize = {
+          ...(editorImg.style.width && { w: Number(editorImg.style.width.replace(/px$/, '')) }),
+          ...(editorImg.style.height && { h: Number(editorImg.style.height.replace(/px$/, '')) }),
+        }
+        const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(editorImg.src, imgSize);
         editorImg.src = uploadedImg;
       }
       const updatedHtmlContent = document.body.innerHTML;
