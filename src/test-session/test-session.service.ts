@@ -97,16 +97,33 @@ export class TestSessionService {
       if (!targetTestSession) {
         throw new NotFoundException('Test Session not found');
       }
+      const targetSwVersion = await this.swVersionService.getSwVersionById(targetTestSession.swVersion.swVersionId)
+      if (!targetSwVersion) {
+        throw new NotFoundException('Software Version not found');
+      }
 
       const objTestSession = new TestSession(testSession);
       if (testSession.status === E_TestStatus.passed) {
         objTestSession.finishedAt = new Date();
       }
-
-      return await this.testSessionRepository.update(
+      const updatedResult = await this.testSessionRepository.update(
         testSessionId,
         objTestSession,
       );
+
+      const allTestSessions = await this.getTestSessionsBySwVersionId(targetTestSession.swVersion.swVersionId)
+      const isTestAllPass = await allTestSessions
+        .map((testSession) => testSession.status)
+        .every((status) => status === E_TestStatus.passed)
+      if (isTestAllPass) {
+        this.mailService.testFinishedMail(
+          allTestSessions.map((testSession) => testSession.user),
+          targetSwVersion
+        )
+      }
+
+
+      return updatedResult
     } catch (error) {
       if (error instanceof QueryFailedError) {
         switch (error.driverError.code) {

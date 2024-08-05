@@ -46,6 +46,7 @@ export class SwVersion {
   user: User;
 
   @ManyToOne((type) => SwType, (swType) => swType,)
+  @JoinColumn()
   swType: SwType;
 
   @OneToMany(
