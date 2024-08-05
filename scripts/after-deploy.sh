@@ -3,6 +3,6 @@ REPOSITORY=/home/ubuntu/build
 
 cd $REPOSITORY
 
-sudo npm install
+npm install
 
-sudo pm2 start dist
+pm2 start dist
