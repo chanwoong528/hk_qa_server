@@ -63,7 +63,9 @@ jobs:
 
       - name: deploy with AWS codeDeploy
         run: aws deploy create-deployment
+          --file-exists-behavior OVERWRITE
           --application-name hkqacd
           --deployment-config-name CodeDeployDefault.OneAtATime
           --deployment-group-name HQGROUP
+          --ignore-application-stop-failures
           --s3-location bucket=hkqa-build-bucket,bundleType=zip,key=deploy/hous.zip
