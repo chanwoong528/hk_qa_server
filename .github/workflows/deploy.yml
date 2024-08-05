@@ -63,7 +63,7 @@ jobs:
 
       - name: deploy with AWS codeDeploy
         run: aws deploy create-deployment
-          --application-name hous-codedeploy
+          --application-name hkaqcd
           --deployment-config-name CodeDeployDefault.OneAtATime
-          --deployment-group-name GROUP
+          --deployment-group-name QAGROUP
           --s3-location bucket=hous-build,bundleType=zip,key=deploy/hous.zip
