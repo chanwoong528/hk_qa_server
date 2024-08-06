@@ -48,6 +48,7 @@ jobs:
           touch env/dev.env
           echo AWS_S3_IMG_FOLDER=${{ env.secrets.AWS_S3_IMG_FOLDER }} 
           echo POSTGRES_DB=${{ env.POSTGRES_DB }} 
+          echo AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           touch env/dev.env
           echo POSTGRES_DB=${{secrets.POSTGRES_DB}} >> env/dev.env
           echo POSTGRES_HOST=${{secrets.POSTGRES_HOST}} >> env/dev.env
