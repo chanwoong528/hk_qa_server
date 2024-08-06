@@ -49,7 +49,7 @@ jobs:
 
       - name: zip file
         # run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./.env ./package.json
-        run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./package.json
+        run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./package.json ./tsconfig.json
 
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1
