@@ -45,8 +45,8 @@ jobs:
         run: |
           pwd
           mkdir env
-          touch .env
-          echo PORT=${{ env.POSTGRES_DB }} 
+          touch env/.env
+          echo PORT=${{ env.secrets.POSTGRES_DB }} 
           echo PORT=${{ vars.POSTGRES_DB }} 
           touch env/dev.env
           echo POSTGRES_DB=${{secrets.POSTGRES_DB}} >> env/dev.env
