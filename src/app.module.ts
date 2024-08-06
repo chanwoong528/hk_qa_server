@@ -41,8 +41,10 @@ import { UploadsModule } from './uploads/uploads.module';
         synchronize: true,
         logging: true,
         timezone: 'local',
-        // ssl: true
-        ssl: configService.get('NODE_ENV') === 'prod' ? true : false
+        ssl: configService.get('NODE_ENV') === 'prod' ?
+          {
+            rejectUnauthorized: false,
+          } : false,
       }),
     }),
     AuthModule,
