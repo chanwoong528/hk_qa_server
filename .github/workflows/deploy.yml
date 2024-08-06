@@ -45,7 +45,7 @@ jobs:
         run: |
           pwd
           mkdir env
-          touch env/.env
+          touch env/dev.env
           echo PORT=${{ env.secrets.POSTGRES_DB }} 
           echo PORT=${{ vars.POSTGRES_DB }} 
           touch env/dev.env
@@ -67,7 +67,7 @@ jobs:
           echo AWS_ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} >> env/dev.env
           echo AWS_SECRET_KEY=${{secrets.AWS_SECRET_KEY}} >> env/dev.env
           echo TEAMS_WEBHOOK_URL=${{secrets.TEAMS_WEBHOOK_URL}} >> env/dev.env
-          cat dev.env
+          cat env/dev.env
 
       - name: build server files
         working-directory: ./
