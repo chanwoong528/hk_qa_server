@@ -23,6 +23,7 @@ import { UploadsModule } from './uploads/uploads.module';
   imports: [
     ConfigModule.forRoot({
       envFilePath: `env/${process.env.NODE_ENV}.env`,
+      // envFilePath: `env/prod.env`,
       isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({

@@ -46,26 +46,26 @@ jobs:
           pwd
           mkdir env
           echo AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} 
-          touch env/dev.env
-          echo POSTGRES_DB=${{secrets.POSTGRES_DB}} >> env/dev.env
-          echo POSTGRES_HOST=${{secrets.POSTGRES_HOST}} >> env/dev.env
-          echo POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}} >> env/dev.env
-          echo POSTGRES_PORT_POOL=${{secrets.POSTGRES_PORT_POOL}} >> env/dev.env
-          echo POSTGRES_USER=${{secrets.POSTGRES_USER}} >> env/dev.env
-          echo JWT_SECRET=${{secrets.JWT_SECRET}} >> env/dev.env
-          echo BCRYPT_SALT=${{secrets.BCRYPT_SALT}} >> env/dev.env
-          echo BCRYPT_PW=${{secrets.BCRYPT_PW}} >> env/dev.env
-          echo SMTP_AUTH_PW=${{secrets.SMTP_AUTH_PW}} >> env/dev.env
-          echo SMTP_AUTH_EMAIL=${{secrets.SMTP_AUTH_EMAIL}} >> env/dev.env
-          echo SMTP_HOST=${{secrets.SMTP_HOST}} >> env/dev.env
-          echo SMTP_PORT=${{secrets.SMTP_PORT}} >> env/dev.env
-          echo HOMEPAGE_URL=${{secrets.HOMEPAGE_URL}} >> env/dev.env
-          echo AWS_S3_BUCKET_NAME=${{secrets.AWS_S3_BUCKET_NAME}} >> env/dev.env
-          echo AWS_S3_IMG_FOLDER=${{secrets.AWS_S3_IMG_FOLDER}} >> env/dev.env
-          echo AWS_ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} >> env/dev.env
-          echo AWS_SECRET_KEY=${{secrets.AWS_SECRET_KEY}} >> env/dev.env
-          echo TEAMS_WEBHOOK_URL=${{secrets.TEAMS_WEBHOOK_URL}} >> env/dev.env
-          cat env/dev.env
+          touch env/prod.env
+          echo POSTGRES_DB=${{secrets.POSTGRES_DB}} >> env/prod.env
+          echo POSTGRES_HOST=${{secrets.POSTGRES_HOST}} >> env/prod.env
+          echo POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}} >> env/prod.env
+          echo POSTGRES_PORT_POOL=${{secrets.POSTGRES_PORT_POOL}} >> env/prod.env
+          echo POSTGRES_USER=${{secrets.POSTGRES_USER}} >> env/prod.env
+          echo JWT_SECRET=${{secrets.JWT_SECRET}} >> env/prod.env
+          echo BCRYPT_SALT=${{secrets.BCRYPT_SALT}} >> env/prod.env
+          echo BCRYPT_PW=${{secrets.BCRYPT_PW}} >> env/prod.env
+          echo SMTP_AUTH_PW=${{secrets.SMTP_AUTH_PW}} >> env/prod.env
+          echo SMTP_AUTH_EMAIL=${{secrets.SMTP_AUTH_EMAIL}} >> env/prod.env
+          echo SMTP_HOST=${{secrets.SMTP_HOST}} >> env/prod.env
+          echo SMTP_PORT=${{secrets.SMTP_PORT}} >> env/prod.env
+          echo HOMEPAGE_URL=${{secrets.HOMEPAGE_URL}} >> env/prod.env
+          echo AWS_S3_BUCKET_NAME=${{secrets.AWS_S3_BUCKET_NAME}} >> env/prod.env
+          echo AWS_S3_IMG_FOLDER=${{secrets.AWS_S3_IMG_FOLDER}} >> env/prod.env
+          echo AWS_ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} >> env/prod.env
+          echo AWS_SECRET_KEY=${{secrets.AWS_SECRET_KEY}} >> env/prod.env
+          echo TEAMS_WEBHOOK_URL=${{secrets.TEAMS_WEBHOOK_URL}} >> env/prod.env
+          cat env/prod.env
 
       - name: build server files
         working-directory: ./
@@ -75,7 +75,7 @@ jobs:
 
       - name: zip file
         # run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./.env ./package.json
-        run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./package.json ./tsconfig.json ./env/dev.env
+        run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./package.json ./tsconfig.json ./env/prod.env
 
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1
