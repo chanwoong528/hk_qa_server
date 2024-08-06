@@ -45,6 +45,7 @@ jobs:
         run: |
           pwd
           mkdir env
+          echo ${{secrets}}
           touch env/dev.env
           echo POSTGRES_DB=${{secrets.POSTGRES_DB}} >> dev.env
           echo POSTGRES_HOST=${{secrets.POSTGRES_HOST}} >> dev.env
