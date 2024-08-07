@@ -13,9 +13,10 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter())
 
   app.enableCors({
-    origin: '*',
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    exposedHeaders: ['Authorization'], // * 사용
   })
 
   await app.listen(3000);
