@@ -63,7 +63,7 @@ jobs:
           npm run build
 
       - name: zip file
-        run: zip -r server.zip ./dist ./scripts ./appspec.yml ./package.json ./tsconfig.json ./env/prod.env
+        run: zip -r server.zip ./dist ./scripts ./appspec.yml ./package.json ./tsconfig.json ./env/prod.env ./ecosystem.config.js
 
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1

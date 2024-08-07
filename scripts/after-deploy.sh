@@ -8,4 +8,4 @@ export NVM_DIR="$HOME/.nvm"
 
 npm install
 
-pm2 start ecosystem.config.js 
+pm2 start ./ecosystem.config.js 
