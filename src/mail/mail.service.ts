@@ -105,7 +105,8 @@ export class MailService {
           }
         ]
       }
-      axios.post(`${this.configService.get<string>('TEAMS_WEBHOOK_URL')} `, axiosBody)
+      axios.post(
+        "https://prod2-01.southeastasia.logic.azure.com:443/workflows/ed6732f462cc46bcbf444511cc55eb6b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Y9fceOlwg8KS3xGtNMDvvrCIXO80oj7gHSbOTdtPyn0", axiosBody)
     })
   }
 }
