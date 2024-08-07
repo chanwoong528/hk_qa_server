@@ -6,7 +6,7 @@ module.exports = {
       script: "npm",
       args: "run start:prod",
       watch: true, // 파일 변경 모니터링, 파일 변동시 재시작
-      instances: 2,
+      instances: 1,
       exec_mode: "cluster",
       env: {
         "PORT": 3000,

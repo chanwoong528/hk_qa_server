@@ -8,4 +8,6 @@ export NVM_DIR="$HOME/.nvm"
 
 npm install
 
+pm2 stop hkqa-server
+
 pm2 start ./ecosystem.config.js 
