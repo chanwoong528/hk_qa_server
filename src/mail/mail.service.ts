@@ -64,8 +64,6 @@ export class MailService {
 
       ]
     }
-
-
     axios.post(`${this.configService.get<string>('TEAMS_WEBHOOK_URL')} `, axiosBody)
 
   }
