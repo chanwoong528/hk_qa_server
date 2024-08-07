@@ -20,7 +20,9 @@ export class CommentController {
   async getCommentsBySwVersionId(
     @Param('swVersionId', new ParseUUIDPipe()) swVersionId: string,
   ): Promise<Comment[]> {
-    return await this.commentService.getCommentsBySwVersionId(swVersionId);
+    const commentList = await this.commentService.getCommentsBySwVersionId(swVersionId);
+    console.log(commentList[0].parentComment)
+    return commentList
   }
 
   @Get("child-comment/:parentId")

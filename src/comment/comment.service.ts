@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { CreateCommentDto } from './comment.dto';
 import { Comment } from './comment.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
@@ -51,12 +51,14 @@ export class CommentService {
   }
 
   async getCommentsBySwVersionId(swVersionId: string): Promise<Comment[]> {
+
     return await this.commentRepository.find({
-      relations: ['user', 'swVersion', 'childComments', 'childComments.user'],
+      relations: ['user', 'swVersion', 'childComments', 'childComments.user', "parentComment"],
       where: {
         swVersion: {
           swVersionId: swVersionId
-        }
+        },
+        parentComment: IsNull()
       }
     })
   }
