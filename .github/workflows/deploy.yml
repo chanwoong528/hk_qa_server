@@ -64,8 +64,7 @@ jobs:
           npm run build
 
       - name: zip file
-        # run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./.env ./package.json
-        run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./package.json ./tsconfig.json ./env/prod.env
+        run: zip -r server.zip ./dist ./scripts ./appspec.yml ./package.json ./tsconfig.json ./env/prod.env
 
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -75,7 +74,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./hous.zip s3://hkqa-build-bucket/deploy/
+        run: aws s3 cp --region ap-northeast-2 ./server.zip s3://hkqa-build-bucket/deploy/
 
       - name: deploy with AWS codeDeploy
         run: aws deploy create-deployment
@@ -84,4 +83,4 @@ jobs:
           --deployment-config-name CodeDeployDefault.OneAtATime
           --deployment-group-name HQGROUP
           --ignore-application-stop-failures
-          --s3-location bucket=hkqa-build-bucket,bundleType=zip,key=deploy/hous.zip
+          --s3-location bucket=hkqa-build-bucket,bundleType=zip,key=deploy/server.zip
