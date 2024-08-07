@@ -30,16 +30,6 @@ jobs:
       - name: Check Npm -v
         run: npm -v
 
-      # - name: create env file
-      #   working-directory: ./
-      #   run: |
-      #     pwd
-      #     touch env/dev.env
-      #     echo PORT=${{ secrets.PORT }} >> .env
-      #     echo MONGODB_URI=${{ secrets.MONGODB_URI }} >> .env
-      #     echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
-      #     echo JWT_ALGO=${{ secrets.JWT_ALGO }} >> .env
-      #     cat .env
       - name: create env file
         working-directory: ./
         run: |
