@@ -17,3 +17,6 @@ export enum E_TestStatus {
   failed = 'failed',
 }
 
+export enum E_LogType {
+  testerStatus = 'testerStatus',
+}

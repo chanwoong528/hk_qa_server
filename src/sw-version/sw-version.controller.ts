@@ -42,12 +42,18 @@ export class SwVersionController {
 
   @Roles(E_Role.master, E_Role.admin)
   @UseGuards(AuthGuard)
-  @Patch(':id')
+  @Post('edit/:id')
+  @UseInterceptors(FileInterceptor("file"))
   async updateSwVersion(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() swVersion: UpdateSwVersionDto
+    @Body() swVersion: UpdateSwVersionDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<UpdateResult> {
-
+    console.log("@@@@@ ", swVersion)
+    if (!!file) {
+      const uploadedInfo = await this.uploadsService.uploadFileSwVersion(file);
+      swVersion.fileSrc = uploadedInfo;
+    }
     const updatedResult = await this.swVersionService.updateSwVersionById(id, swVersion);
     if (updatedResult.affected === 0) {
       throw new NotFoundException('SwVersion does not exist!');

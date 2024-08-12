@@ -7,14 +7,18 @@ import { JwtModule } from '@nestjs/jwt';
 import { SwVersionModule } from 'src/sw-version/sw-version.module';
 import { UserRepository } from 'src/user/user.repository';
 import { MailService } from 'src/mail/mail.service';
+import { UploadsService } from 'src/uploads/uploads.service';
+import { LogService } from 'src/log/log.service';
+import { LogModule } from 'src/log/log.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([TestSession]),
     JwtModule,
-    SwVersionModule
+    SwVersionModule,
+    LogModule
   ],
   controllers: [TestSessionController],
-  providers: [TestSessionService, UserRepository, MailService]
+  providers: [TestSessionService, UserRepository, MailService, UploadsService]
 })
 export class TestSessionModule { }

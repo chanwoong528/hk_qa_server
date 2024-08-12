@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IsNull, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as jsdom from 'jsdom';
+
 import { CreateCommentDto } from './comment.dto';
 import { Comment } from './comment.entity';
-import { SwVersion } from 'src/sw-version/sw-version.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+
 import { UserService } from 'src/user/user.service';
 import { SwVersionService } from 'src/sw-version/sw-version.service';
+import { UploadsService } from 'src/uploads/uploads.service';
 
 @Injectable()
 export class CommentService {
@@ -14,7 +17,8 @@ export class CommentService {
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
     private readonly userService: UserService,
-    private readonly swVersionService: SwVersionService
+    private readonly swVersionService: SwVersionService,
+    private readonly uploadsService: UploadsService
   ) { }
 
 
@@ -29,7 +33,28 @@ export class CommentService {
     if (!swVersion) {
       throw new NotFoundException('SwVersion not found');
     }
+
+    const { JSDOM } = jsdom;
+    const dom = new JSDOM(commentInfo.content,
+      {
+        contentType: "text/html", includeNodeLocations: true,
+      }
+    );
+    const document = dom.window.document;
+    const imgElements = document.querySelectorAll("img");
+    for (const editorImg of imgElements) {
+
+      let imgSize = {
+        ...(editorImg.style.width && { w: Number(editorImg.style.width.replace(/px$/, '')) }),
+        ...(editorImg.style.height && { h: Number(editorImg.style.height.replace(/px$/, '')) }),
+      }
+      const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(editorImg.src, imgSize);
+      editorImg.src = uploadedImg;
+    }
+    const updatedHtmlContent = document.body.innerHTML;
     let newComment = new Comment(commentInfo);
+
+    newComment.content = updatedHtmlContent
 
 
     if (commentInfo.parentId) {

@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { SwVersionModule } from 'src/sw-version/sw-version.module';
 import { UserService } from 'src/user/user.service';
 import { UsersModule } from 'src/user/user.module';
+import { UploadsService } from 'src/uploads/uploads.service';
 
 
 @Module({
@@ -18,7 +19,7 @@ import { UsersModule } from 'src/user/user.module';
     SwVersionModule
   ],
   controllers: [CommentController],
-  providers: [CommentService, UserRepository],
+  providers: [CommentService, UserRepository, UploadsService],
   exports: [CommentService],
 })
 export class CommentModule { }

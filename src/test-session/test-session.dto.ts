@@ -12,6 +12,7 @@ export class CreateTestSessionDto {
 
 export class UpdateTestSessionDto {
   status: E_TestStatus;
+  reasonContent: string;
 }
 export class PutTestSessionListDto {
   tobeDeletedArr?: string[]

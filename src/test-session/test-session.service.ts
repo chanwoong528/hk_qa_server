@@ -5,16 +5,19 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import * as jsdom from 'jsdom';
+
 import { TestSession } from './test-session.entity';
 import { QueryFailedError, Repository, UpdateResult, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTestSessionDto, PutTestSessionListDto, UpdateTestSessionDto } from './test-session.dto';
+
 import { UserRepository } from 'src/user/user.repository';
 import { SwVersionService } from 'src/sw-version/sw-version.service';
-import { E_TestStatus } from 'src/enum';
-import { User } from 'src/user/user.entity';
-import { SwVersion } from 'src/sw-version/sw-version.entity';
+import { E_LogType, E_TestStatus } from 'src/enum';
 import { MailService } from 'src/mail/mail.service';
+import { UploadsService } from 'src/uploads/uploads.service';
+import { LogService } from 'src/log/log.service';
 
 @Injectable()
 export class TestSessionService {
@@ -24,6 +27,8 @@ export class TestSessionService {
     private readonly userRepository: UserRepository,
     private readonly swVersionService: SwVersionService,
     private readonly mailService: MailService,
+    private readonly uploadsService: UploadsService,
+    private readonly logService: LogService
   ) { }
 
   async getTestSessions(): Promise<TestSession[]> {
@@ -102,15 +107,51 @@ export class TestSessionService {
         throw new NotFoundException('Software Version not found');
       }
 
+
       const objTestSession = new TestSession(testSession);
-      if (testSession.status === E_TestStatus.passed) {
+      if (testSession.status === E_TestStatus.failed || testSession.status === E_TestStatus.passed) {
+        if (!testSession.reasonContent)
+          throw new UnprocessableEntityException('Reason For TestStatus change is required');
+
+
+
         objTestSession.finishedAt = new Date();
+        const { JSDOM } = jsdom;
+        const dom = new JSDOM(testSession.reasonContent,
+          {
+            contentType: "text/html", includeNodeLocations: true,
+          }
+        );
+        const document = dom.window.document;
+        const imgElements = document.querySelectorAll("img");
+        for (const editorImg of imgElements) {
+
+          let imgSize = {
+            ...(editorImg.style.width && { w: Number(editorImg.style.width.replace(/px$/, '')) }),
+            ...(editorImg.style.height && { h: Number(editorImg.style.height.replace(/px$/, '')) }),
+          }
+          const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(editorImg.src, imgSize);
+          editorImg.src = uploadedImg;
+        }
+        const updatedHtmlContent = document.body.innerHTML;
+        objTestSession.reasonContent = updatedHtmlContent;
+
+
+        const tobeLogged = await this.getTestSessionById(testSessionId);
+        this.logService.postLog({ logType: E_LogType.testerStatus, content: tobeLogged })
+
       }
+
+
+
+
       const updatedResult = await this.testSessionRepository.update(
         testSessionId,
         objTestSession,
       );
 
+
+      // Check if all test sessions are passed and send an email IF all are passed
       const allTestSessions = await this.getTestSessionsBySwVersionId(targetTestSession.swVersion.swVersionId)
       const isTestAllPass = await allTestSessions
         .map((testSession) => testSession.status)
@@ -121,7 +162,7 @@ export class TestSessionService {
           targetSwVersion
         )
       }
-
+      // Check if all test sessions are passed and send an email IF all are passed
 
       return updatedResult
     } catch (error) {

@@ -30,6 +30,10 @@ export class TestSession {
   @Column({ default: E_TestStatus.pending, type: 'enum', enum: E_TestStatus })
   status: E_TestStatus;
 
+  @Column({ nullable: true, default: null })
+  reasonContent: string;
+
+
   @CreateDateColumn()
   createdAt: Date;
 
