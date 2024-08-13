@@ -12,6 +12,7 @@ import {
 import { User } from 'src/user/user.entity';
 import { SwType } from 'src/sw-type/sw-type.entity';
 import { TestSession } from 'src/test-session/test-session.entity';
+import { TestUnit } from 'src/test-unit/test-unit.entity';
 
 @Entity({ name: 'swVersion', schema: 'public', synchronize: true })
 @Unique(['versionTitle', 'swType'])
@@ -29,7 +30,7 @@ export class SwVersion {
   @Column()
   versionDesc: string;
 
-  @Column({ nullable: true, })
+  @Column({ nullable: true })
   fileSrc: string;
 
   @Column()
@@ -41,19 +42,18 @@ export class SwVersion {
   @UpdateDateColumn()
   updatedAt: Date;
 
-
   @ManyToOne((type) => User, (user) => user)
   user: User;
 
-  @ManyToOne((type) => SwType, (swType) => swType,)
+  @ManyToOne((type) => SwType, (swType) => swType)
   @JoinColumn()
   swType: SwType;
 
-  @OneToMany(
-    (type) => TestSession,
-    (testSession) => testSession.swVersion,
-  )
+  @OneToMany((type) => TestSession, (testSession) => testSession.swVersion)
   @JoinColumn()
   testSessions: TestSession[];
 
+  @OneToMany((type) => TestUnit, (testUnit) => testUnit.swVersion)
+  @JoinColumn()
+  testUnits: TestUnit[];
 }
