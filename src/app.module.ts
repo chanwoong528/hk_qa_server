@@ -18,6 +18,7 @@ import { RolesGuard } from './common/guard/role.guard';
 import { MailModule } from './mail/mail.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { LogModule } from './log/log.module';
+import { TestUnitModule } from './test-unit/test-unit.module';
 
 @Global()
 @Module({
@@ -59,6 +60,7 @@ import { LogModule } from './log/log.module';
     MailModule,
     UploadsModule,
     LogModule,
+    TestUnitModule,
   ],
   controllers: [AppController],
   providers: [

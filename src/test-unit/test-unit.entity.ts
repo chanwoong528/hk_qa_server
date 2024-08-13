@@ -6,41 +6,32 @@ import {
   JoinTable,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
+
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
 import { E_TestStatus } from 'src/enum';
 
-@Entity({ name: 'testSession', schema: 'public', synchronize: true })
-@Unique(['swVersion', 'user.id'])
-export class TestSession {
-  constructor(partial?: Partial<TestSession>) {
+@Entity({ name: 'testUnit', schema: 'public', synchronize: true })
+export class TestUnit {
+  constructor(partial?: Partial<TestUnit>) {
     if (!!partial) {
       Object.assign(this, partial);
     }
-
   }
 
   @PrimaryGeneratedColumn('uuid')
-  sessionId: string;
+  testUnitId: string;
 
-  @Column({ default: E_TestStatus.pending, type: 'enum', enum: E_TestStatus })
-  status: E_TestStatus;
-
-  @Column({ nullable: true, default: null })
-  reasonContent: string;
-
+  @Column()
+  unitDesc: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @Column({ type: 'timestamptz', nullable: true, default: null })
-  finishedAt: Date;
 
   @ManyToOne(() => User, user => user, { eager: true })
   @JoinColumn()
@@ -49,4 +40,5 @@ export class TestSession {
   @ManyToOne(() => SwVersion, (swVersion) => swVersion, { eager: true, cascade: true, })
   @JoinTable()
   swVersion: SwVersion;
+
 }

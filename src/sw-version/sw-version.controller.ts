@@ -17,7 +17,7 @@ export class SwVersionController {
     private readonly uploadsService: UploadsService
   ) { }
 
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @Get(':id')
   async getSwVersions(@Param('id', new ParseUUIDPipe()) swTypeid: string): Promise<SwVersion[]> {
     return await this.swVersionService.getSwVersions(swTypeid)
