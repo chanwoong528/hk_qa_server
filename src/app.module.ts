@@ -19,6 +19,7 @@ import { MailModule } from './mail/mail.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { LogModule } from './log/log.module';
 import { TestUnitModule } from './test-unit/test-unit.module';
+import { ReactionModule } from './reaction/reaction.module';
 
 @Global()
 @Module({
@@ -61,6 +62,7 @@ import { TestUnitModule } from './test-unit/test-unit.module';
     UploadsModule,
     LogModule,
     TestUnitModule,
+    ReactionModule,
   ],
   controllers: [AppController],
   providers: [

@@ -49,7 +49,7 @@ export class SwVersionController {
     @Body() swVersion: UpdateSwVersionDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<UpdateResult> {
-    console.log("@@@@@ ", swVersion)
+
     if (!!file) {
       const uploadedInfo = await this.uploadsService.uploadFileSwVersion(file);
       swVersion.fileSrc = uploadedInfo;

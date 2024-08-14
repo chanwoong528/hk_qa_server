@@ -5,13 +5,14 @@ import {
   JoinColumn,
   JoinTable,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
-import { E_TestStatus } from 'src/enum';
+import { Reaction } from 'src/reaction/reaction.entity';
 
 @Entity({ name: 'testUnit', schema: 'public', synchronize: true })
 export class TestUnit {
@@ -40,5 +41,11 @@ export class TestUnit {
   @ManyToOne(() => SwVersion, (swVersion) => swVersion, { eager: true, cascade: true, })
   @JoinTable()
   swVersion: SwVersion;
+
+  @OneToMany((type) => Reaction, (reaction) => reaction.parentTestUnit,
+    // { cascade: ["remove"] }
+  )
+  @JoinTable()
+  reactions: Reaction[];
 
 }

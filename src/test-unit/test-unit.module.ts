@@ -9,6 +9,7 @@ import { SwVersionModule } from 'src/sw-version/sw-version.module';
 @Module({
   imports: [TypeOrmModule.forFeature([TestUnit]), SwVersionModule],
   controllers: [TestUnitController],
-  providers: [TestUnitService]
+  providers: [TestUnitService],
+  exports: [TestUnitService]
 })
 export class TestUnitModule { }

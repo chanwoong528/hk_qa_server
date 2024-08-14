@@ -12,7 +12,8 @@ export class LogService {
   ) { }
 
   async getLogsByUserId(userId: string, versionId: string): Promise<QAlog[]> {
-    return await this.logRepository.createQueryBuilder('QAlog')
+    return await this.logRepository
+      .createQueryBuilder('QAlog')
       .select()
       .where("QAlog.content ::jsonb @> :content", {
         content: {
