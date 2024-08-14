@@ -5,19 +5,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TestUnitService {
-
   constructor(
     @InjectRepository(TestUnit)
     private readonly testUnitRepository: Repository<TestUnit>,
-  ) { }
+  ) {}
 
   async getTestUnitById(testUnitId: string): Promise<TestUnit> {
     if (!testUnitId) throw new NotFoundException('TestUnit not found');
 
     return await this.testUnitRepository.findOne({
       where: {
-        testUnitId: testUnitId
-      }
+        testUnitId: testUnitId,
+      },
     });
   }
 
@@ -25,10 +24,9 @@ export class TestUnitService {
     return await this.testUnitRepository.find({
       relations: ['swVersion', 'reactions', 'reactions.user'],
       where: { swVersion: { swVersionId: swVersionId } },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'ASC' },
     });
   }
-
 
   async createTestUnit(testUnit: Partial<TestUnit>): Promise<TestUnit> {
     return await this.testUnitRepository.save(testUnit);
@@ -37,11 +35,13 @@ export class TestUnitService {
     return await this.testUnitRepository.upsert(testUnit, ['testUnitId']);
   }
 
-  async createTestUnitList(testUnitList: Partial<TestUnit>[]): Promise<TestUnit[]> {
-    const postTestUnitPromise = testUnitList.map(testUnit => {
+  async createTestUnitList(
+    testUnitList: Partial<TestUnit>[],
+  ): Promise<TestUnit[]> {
+    const postTestUnitPromise = testUnitList.map((testUnit) => {
       return this.createTestUnit(testUnit);
     });
-    return await Promise.all(postTestUnitPromise)
+    return await Promise.all(postTestUnitPromise);
   }
   async deleteTestUnit(testUnitId: string): Promise<any> {
     return await this.testUnitRepository.delete({ testUnitId: testUnitId });
@@ -53,27 +53,31 @@ export class TestUnitService {
 
   async patchTestUnitList(
     tobeLastUnitTestList: Partial<TestUnit>[],
-    swVersionId: string
+    swVersionId: string,
   ): Promise<any> {
     const curTestUnitList = await this.getTestUnitsBySwVersionId(swVersionId);
     let promiseArr = [];
 
-    const tobeDeleted = await curTestUnitList.filter(curTestUnit => !tobeLastUnitTestList.some(testUnit => testUnit.testUnitId === curTestUnit.testUnitId));
+    const tobeDeleted = await curTestUnitList.filter(
+      (curTestUnit) =>
+        !tobeLastUnitTestList.some(
+          (testUnit) => testUnit.testUnitId === curTestUnit.testUnitId,
+        ),
+    );
     if (tobeDeleted.length > 0) {
-      const deleteTestUnitPromise = tobeDeleted.map(testUnit => {
+      const deleteTestUnitPromise = tobeDeleted.map((testUnit) => {
         return this.deleteTestUnit(testUnit.testUnitId);
-      })
-      promiseArr.push(deleteTestUnitPromise)
+      });
+      promiseArr.push(deleteTestUnitPromise);
     }
 
     if (tobeLastUnitTestList.length > 0) {
-      const patchTestUnitPromise = tobeLastUnitTestList.map(testUnit => {
+      const patchTestUnitPromise = tobeLastUnitTestList.map((testUnit) => {
         return this.createTestUnit(testUnit);
-      })
-      promiseArr.push(patchTestUnitPromise)
+      });
+      promiseArr.push(patchTestUnitPromise);
     }
 
-    return await Promise.all(promiseArr)
+    return await Promise.all(promiseArr);
   }
-
 }

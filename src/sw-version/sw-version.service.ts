@@ -24,14 +24,14 @@ export class SwVersionService {
     private readonly userRepository: UserRepository,
     private readonly swTypeService: SwTypeService,
     private readonly uploadsService: UploadsService,
-  ) { }
+  ) {}
 
   //GET_ALL based on swType
   async getSwVersions(swTypeId: string): Promise<SwVersion[]> {
     return await this.swVersionRepository.find({
       relations: ['swType', 'user', 'testSessions', 'testUnits'],
       where: { swType: { swTypeId: swTypeId } },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'DESC', testUnits: { createdAt: 'ASC' } },
     });
   }
 

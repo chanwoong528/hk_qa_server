@@ -18,16 +18,13 @@ import { Roles } from 'src/common/decorator/roles.decorator';
 import { E_Role } from 'src/enum';
 import { UserService } from './user.service';
 import { MailService } from 'src/mail/mail.service';
-import { JwtService } from '@nestjs/jwt';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly mailService: MailService,
-    private readonly jwtService: JwtService,
-
-  ) { }
+  ) {}
 
   @Get()
   @UseGuards(AuthGuard)
@@ -38,6 +35,20 @@ export class UserController {
     }
     return this.userService.findAll();
   }
+  @Post('forgot-password')
+  async forgotPassword(@Body() body) {
+    const user = await this.userService.findOneByEmail(body.email);
+
+    if (!user) {
+      throw new NotFoundException('User does not exist!');
+    }
+
+    this.mailService.sendForgotPasswordMail(user);
+    return { message: 'Email sent!' };
+  }
+
+
+
 
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe()) id: string): Promise<User> {
@@ -57,9 +68,12 @@ export class UserController {
 
     const createdUser = await this.userService.create(user);
 
-    this.mailService.sendVerificationMail(createdUser, createdUser.verificationToken);
+    this.mailService.sendVerificationMail(
+      createdUser,
+      createdUser.verificationToken,
+    );
 
-    return createdUser
+    return createdUser;
   }
 
   @Patch(':id')

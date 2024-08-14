@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -10,10 +11,10 @@ import {
 
 import { User } from 'src/user/user.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
+import { Reaction } from 'src/reaction/reaction.entity';
 
 @Entity({ name: 'comment', schema: 'public', synchronize: true })
 export class Comment {
-
   constructor(partial: Partial<Comment>) {
     Object.assign(this, partial);
   }
@@ -29,11 +30,14 @@ export class Comment {
   @UpdateDateColumn()
   updatedAt: Date;
 
-
-  @ManyToOne((type) => Comment, (comment) => comment.childComments, { nullable: true })
+  @ManyToOne((type) => Comment, (comment) => comment.childComments, {
+    nullable: true,
+  })
   parentComment?: Comment;
 
-  @OneToMany((type) => Comment, (comment) => comment.parentComment, { cascade: true })
+  @OneToMany((type) => Comment, (comment) => comment.parentComment, {
+    cascade: true,
+  })
   childComments?: Comment[];
 
   @ManyToOne((type) => User, (user) => user)
@@ -42,5 +46,11 @@ export class Comment {
   @ManyToOne((type) => SwVersion, (swVersion) => swVersion)
   swVersion: SwVersion;
 
-
+  @OneToMany(
+    (type) => Reaction,
+    (reaction) => reaction.parentComment,
+    // { cascade: ["remove"] }
+  )
+  @JoinTable()
+  reactions: Reaction[];
 }

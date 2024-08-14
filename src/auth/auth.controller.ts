@@ -14,15 +14,13 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { E_UserStatus } from 'src/enum';
 
-
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-
-  ) { }
+  ) {}
 
   @Post()
   async signIn(@Body() userLoginInfo: SignInDto) {
@@ -30,22 +28,37 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('')// login check
+  @Get('') // login check
   async jwtTest(@Request() req) {
     const result = await this.userService.findOneById(req.user.sub);
     return result;
   }
 
-
-  @Post("verify-email")
-  async verifyFirstLogin(@Request() req, @Body() reqBody: { token: string }) {
-    console.log(reqBody.token)
+  @Post('reset-password')
+  async resetPasswordToDefault(@Body() reqBody: { token: string }) {
     const payload = await this.jwtService.verifyAsync(reqBody.token);
     if (!!payload.id) {
-      const updatedResult = await this.userService.updateUserById(payload.id, { userStatus: E_UserStatus.ok })
+      const updatedResult = await this.userService.updateUserById(payload.id, {
+        pw: '123456',
+      });
+      if (updatedResult.affected > 0) {
+        return { code: 200, message: 'success' };
+      }
+
+      throw new InternalServerErrorException('Internal Server Error');
+    }
+  }
+  
+  @Post('verify-email')
+  async verifyFirstLogin(@Request() req, @Body() reqBody: { token: string }) {
+    const payload = await this.jwtService.verifyAsync(reqBody.token);
+    if (!!payload.id) {
+      const updatedResult = await this.userService.updateUserById(payload.id, {
+        userStatus: E_UserStatus.ok,
+      });
 
       if (updatedResult.affected > 0) {
-        return { code: 200, message: "success" }
+        return { code: 200, message: 'success' };
       }
     }
     throw new InternalServerErrorException('Internal Server Error');
