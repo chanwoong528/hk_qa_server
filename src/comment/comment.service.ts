@@ -87,6 +87,17 @@ export class CommentService {
       }
     })
   }
+  async getCommentById(commentId: string): Promise<Comment> {
+    if (!commentId) throw new NotFoundException('Comment not found');
+
+
+    return await this.commentRepository.findOne({
+      relations: ['user', 'swVersion', 'childComments', 'childComments.user', "parentComment"],
+      where: {
+        commentId: commentId
+      }
+    })
+  }
 
   async getChildCommentsByParentId(parentId: string): Promise<Comment[]> {
     return await this.commentRepository.find({

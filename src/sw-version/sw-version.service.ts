@@ -23,19 +23,21 @@ export class SwVersionService {
     private readonly swVersionRepository: Repository<SwVersion>,
     private readonly userRepository: UserRepository,
     private readonly swTypeService: SwTypeService,
-    private readonly uploadsService: UploadsService
+    private readonly uploadsService: UploadsService,
   ) { }
 
   //GET_ALL based on swType
   async getSwVersions(swTypeId: string): Promise<SwVersion[]> {
     return await this.swVersionRepository.find({
-      relations: ['swType', 'user', 'testSessions', 'user'],
+      relations: ['swType', 'user', 'testSessions', 'testUnits'],
       where: { swType: { swTypeId: swTypeId } },
-      order: { createdAt: "DESC" }
+      order: { createdAt: 'DESC' },
     });
   }
 
   async getSwVersionById(swVersionId: string): Promise<SwVersion> {
+    if (!swVersionId) throw new NotFoundException('Software Version not found');
+
     return await this.swVersionRepository.findOne({
       relations: ['swType', 'user'],
       where: { swVersionId: swVersionId },
@@ -64,20 +66,25 @@ export class SwVersionService {
       createdSwVersion.swType = targetSwType;
 
       const { JSDOM } = jsdom;
-      const dom = new JSDOM(swVersion.versionDesc,
-        {
-          contentType: "text/html", includeNodeLocations: true,
-        }
-      );
+      const dom = new JSDOM(swVersion.versionDesc, {
+        contentType: 'text/html',
+        includeNodeLocations: true,
+      });
       const document = dom.window.document;
-      const imgElements = document.querySelectorAll("img");
+      const imgElements = document.querySelectorAll('img');
       for (const editorImg of imgElements) {
-
         let imgSize = {
-          ...(editorImg.style.width && { w: Number(editorImg.style.width.replace(/px$/, '')) }),
-          ...(editorImg.style.height && { h: Number(editorImg.style.height.replace(/px$/, '')) }),
-        }
-        const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(editorImg.src, imgSize);
+          ...(editorImg.style.width && {
+            w: Number(editorImg.style.width.replace(/px$/, '')),
+          }),
+          ...(editorImg.style.height && {
+            h: Number(editorImg.style.height.replace(/px$/, '')),
+          }),
+        };
+        const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(
+          editorImg.src,
+          imgSize,
+        );
         editorImg.src = uploadedImg;
       }
       const updatedHtmlContent = document.body.innerHTML;

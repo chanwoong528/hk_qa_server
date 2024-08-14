@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 
 import { CreateUserDto, UpdateUserDto } from './user.dto';
@@ -26,6 +26,8 @@ export class UserService {
   }
 
   async findOneById(id: string): Promise<User & { isPwDefault?: boolean }> {
+    if (!id) throw new NotFoundException('User not found');
+
     const foundUser = await this.userRepository.findOneByUUID(id);
     const isPwDefault = await bcrypt.compare("123456", foundUser.pw);
 

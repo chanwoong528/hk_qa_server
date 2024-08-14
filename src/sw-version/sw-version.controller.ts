@@ -17,7 +17,7 @@ export class SwVersionController {
     private readonly uploadsService: UploadsService
   ) { }
 
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @Get(':id')
   async getSwVersions(@Param('id', new ParseUUIDPipe()) swTypeid: string): Promise<SwVersion[]> {
     return await this.swVersionService.getSwVersions(swTypeid)
@@ -49,7 +49,7 @@ export class SwVersionController {
     @Body() swVersion: UpdateSwVersionDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<UpdateResult> {
-    console.log("@@@@@ ", swVersion)
+
     if (!!file) {
       const uploadedInfo = await this.uploadsService.uploadFileSwVersion(file);
       swVersion.fileSrc = uploadedInfo;

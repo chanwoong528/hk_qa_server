@@ -11,13 +11,17 @@ export class LogService {
     @InjectRepository(QAlog) private readonly logRepository: Repository<QAlog>
   ) { }
 
-  async getLogsByUserId(userId: string): Promise<QAlog[]> {
-    return await this.logRepository.createQueryBuilder('QAlog')
+  async getLogsByUserId(userId: string, versionId: string): Promise<QAlog[]> {
+    return await this.logRepository
+      .createQueryBuilder('QAlog')
       .select()
       .where("QAlog.content ::jsonb @> :content", {
         content: {
           user: {
             id: userId
+          },
+          swVersion: {
+            swVersionId: versionId
           }
         }
       })

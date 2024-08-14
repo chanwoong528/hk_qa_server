@@ -20,3 +20,18 @@ export enum E_TestStatus {
 export enum E_LogType {
   testerStatus = 'testerStatus',
 }
+
+export enum E_ReactionParentType {
+  comment = 'comment',
+  testUnit = 'testUnit',
+}
+export enum E_ReactionType {
+  check = 'check',
+  stop = 'stop',
+
+  like = 'like',
+  dislike = 'dislike',
+  love = 'love',
+  sad = 'sad',
+  wow = 'wow',
+}
