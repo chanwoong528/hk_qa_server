@@ -39,7 +39,6 @@ export class TestUnitController {
   async getTestUnits(
     @Param('swVersionId', ParseUUIDPipe) swVersionId: string
   ): Promise<TestUnit[]> {
-    console.log('swVersionId', swVersionId);
     return await this.testUnitService.getTestUnitsBySwVersionId(swVersionId);
   }
 

@@ -24,12 +24,11 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   @Get()
   @UseGuards(AuthGuard)
   getUsers(@Query('getType') getType): Promise<User[]> {
-    console.log(getType);
     if (getType === 'all') {
       return this.userService.findAll(getType);
     }

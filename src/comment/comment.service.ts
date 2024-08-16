@@ -9,6 +9,7 @@ import { Comment } from './comment.entity';
 import { UserService } from 'src/user/user.service';
 import { SwVersionService } from 'src/sw-version/sw-version.service';
 import { UploadsService } from 'src/uploads/uploads.service';
+import { SseService } from 'src/sse/sse.service';
 
 @Injectable()
 export class CommentService {
@@ -18,7 +19,8 @@ export class CommentService {
     private readonly userService: UserService,
     private readonly swVersionService: SwVersionService,
     private readonly uploadsService: UploadsService,
-  ) {}
+    private readonly sseService: SseService,
+  ) { }
 
   async createComment(commentInfo: CreateCommentDto): Promise<Comment> {
     const author = await this.userService.findOneById(commentInfo.userId);
@@ -83,8 +85,10 @@ export class CommentService {
 
     newComment.user = author;
     newComment.swVersion = swVersion;
+    const newComm = await this.commentRepository.save(newComment)
 
-    return await this.commentRepository.save(newComment);
+    this.sseService.emitCommentPostedEvent(newComm.commentId);
+    return newComm;
   }
 
   async getCommentsBySwVersionId(swVersionId: string): Promise<Comment[]> {
