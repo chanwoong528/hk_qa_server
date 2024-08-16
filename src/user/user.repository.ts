@@ -2,9 +2,10 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { DataSource, EntityManager, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './user.dto';
 
@@ -18,8 +19,11 @@ export class UserRepository extends Repository<User> {
   }
   async findOneByUUID(id: string): Promise<User> {
 
+    const targetUser = await this.findOne({ where: { id }, select: this.getCols(this) })
+    
+    if (!targetUser) throw new NotFoundException('User not found');
 
-    return await this.findOne({ where: { id }, select: this.getCols(this) });
+    return targetUser;
   }
 
   async createUser(user: CreateUserDto): Promise<User> {

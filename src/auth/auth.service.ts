@@ -3,17 +3,20 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { UserService } from 'src/user/user.service';
 import { LoggedInDto } from './auth.dto';
+import { User } from 'src/user/user.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UserService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) { }
 
   async signIn(email: string, pwInput: string): Promise<LoggedInDto> {
@@ -37,5 +40,20 @@ export class AuthService {
       isPwDefault: isPwDefault,
       access_token: accToken,
     };
+  }
+
+  async verifyJwtToken(token: string): Promise<User> {
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+      return payload;
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
+  }
+  extractTokenFromHeader(headerAuth: string): string | undefined {
+    const [type, token] = headerAuth.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { CommentService } from 'src/comment/comment.service';
 import { TestUnitService } from 'src/test-unit/test-unit.service';
 import { CreateReactionDto } from './reaction.dto';
+import { SseService } from 'src/sse/sse.service';
 
 @Injectable()
 export class ReactionService {
@@ -15,7 +16,8 @@ export class ReactionService {
     private readonly reactionRepository: Repository<Reaction>,
     private readonly userService: UserService,
     private readonly commentService: CommentService,
-    private readonly testUnitService: TestUnitService
+    private readonly testUnitService: TestUnitService,
+    private readonly sseService: SseService,
   ) { }
 
 
@@ -24,8 +26,6 @@ export class ReactionService {
   async createOrUpdateReaction(reaction: CreateReactionDto, authorId: string): Promise<Reaction> {
     const targetAuthor = await this.userService.findOneById(authorId);
     if (!targetAuthor) throw new NotFoundException('User not found');
-
-    console.log('reaction', targetAuthor);
     const newTargetReaction = new Reaction({
       reactionType: reaction.reactionType,
       parentType: reaction.parentType,
@@ -72,7 +72,10 @@ export class ReactionService {
       return await this.reactionRepository.remove(existingReaction);
     }
 
+
     await this.reactionRepository.update(existingReaction.id, newTargetReaction);
+
+    this.sseService.emitCommentPostedEvent(existingReaction.id);
 
     return newTargetReaction
 

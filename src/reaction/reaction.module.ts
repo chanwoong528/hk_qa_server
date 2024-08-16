@@ -4,12 +4,11 @@ import { ReactionService } from './reaction.service';
 import { Reaction } from './reaction.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { TestUnitService } from 'src/test-unit/test-unit.service';
-import { CommentService } from 'src/comment/comment.service';
 import { UserService } from 'src/user/user.service';
 import { CommentModule } from 'src/comment/comment.module';
 import { TestUnitModule } from 'src/test-unit/test-unit.module';
 import { UserRepository } from 'src/user/user.repository';
+import { SseService } from 'src/sse/sse.service';
 
 @Module({
   imports: [
@@ -18,6 +17,6 @@ import { UserRepository } from 'src/user/user.repository';
     TestUnitModule
   ],
   controllers: [ReactionController],
-  providers: [ReactionService, UserRepository, UserService,],
+  providers: [ReactionService, UserRepository, UserService, SseService],
 })
 export class ReactionModule { }

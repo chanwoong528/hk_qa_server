@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 // import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/HttpExceptionFilter';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 
 
@@ -19,6 +20,9 @@ async function bootstrap() {
     exposedHeaders: ['Authorization'], // * 사용
   })
 
+  app.useWebSocketAdapter(new IoAdapter(app));
+
   await app.listen(3000);
+
 }
 bootstrap();

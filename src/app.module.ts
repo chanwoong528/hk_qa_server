@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,10 +20,16 @@ import { UploadsModule } from './uploads/uploads.module';
 import { LogModule } from './log/log.module';
 import { TestUnitModule } from './test-unit/test-unit.module';
 import { ReactionModule } from './reaction/reaction.module';
+import { EventsModule } from './events/events.module';
+import { SseController } from './sse/sse.controller';
+import { SseService } from './sse/sse.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SseModule } from './sse/sse.module';
 
 @Global()
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       envFilePath: `env/${process.env.NODE_ENV}.env`,
       // envFilePath: `env/prod.env`,
@@ -42,7 +48,7 @@ import { ReactionModule } from './reaction/reaction.module';
         entities: [User],
         autoLoadEntities: true,
         synchronize: true,
-        logging: true,
+        logging: false,
         timezone: 'local',
         ssl: configService.get('NODE_ENV') === 'prod' ?
           {
@@ -54,23 +60,29 @@ import { ReactionModule } from './reaction/reaction.module';
     UsersModule,
     SwTypeModule,
     CommentModule,
-
     SwTypeModule,
     SwVersionModule,
     TestSessionModule,
-    MailModule,
     UploadsModule,
-    LogModule,
     TestUnitModule,
     ReactionModule,
+    LogModule,
+
+    MailModule,
+    EventsModule,
+    SseModule,
+
+
   ],
   controllers: [AppController],
   providers: [
+
     AppService,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
+    Logger,
   ],
 })
 export class AppModule { }
