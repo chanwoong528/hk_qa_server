@@ -64,18 +64,22 @@ export class ReactionService {
       }
     })
 
+
+
     if (!existingReaction) {
-      return await this.reactionRepository.save(newTargetReaction);
+      const createdReaction = await this.reactionRepository.save(newTargetReaction);
+      this.sseService.emitCommentPostedEvent(createdReaction.id);
+
+      return createdReaction;
     }
+
+    this.sseService.emitCommentPostedEvent(existingReaction.id);
 
     if (existingReaction.reactionType === newTargetReaction.reactionType) {
       return await this.reactionRepository.remove(existingReaction);
     }
 
-
     await this.reactionRepository.update(existingReaction.id, newTargetReaction);
-
-    this.sseService.emitCommentPostedEvent(existingReaction.id);
 
     return newTargetReaction
 
