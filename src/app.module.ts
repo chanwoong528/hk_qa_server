@@ -2,10 +2,11 @@ import { Global, Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from './user/user.entity';
 
+import { User } from './user/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
 import { SwTypeModule } from './sw-type/sw-type.module';
@@ -20,11 +21,8 @@ import { UploadsModule } from './uploads/uploads.module';
 import { LogModule } from './log/log.module';
 import { TestUnitModule } from './test-unit/test-unit.module';
 import { ReactionModule } from './reaction/reaction.module';
-import { EventsModule } from './events/events.module';
-import { SseController } from './sse/sse.controller';
-import { SseService } from './sse/sse.service';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SseModule } from './sse/sse.module';
+// import { EventsModule } from './events/events.module';//socket
 
 @Global()
 @Module({
@@ -66,13 +64,11 @@ import { SseModule } from './sse/sse.module';
     UploadsModule,
     TestUnitModule,
     ReactionModule,
+
     LogModule,
-
     MailModule,
-    EventsModule,
     SseModule,
-
-
+    // EventsModule, //for socket
   ],
   controllers: [AppController],
   providers: [
