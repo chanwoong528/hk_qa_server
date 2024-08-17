@@ -65,29 +65,10 @@ export class SwVersionService {
       createdSwVersion.user = author;
       createdSwVersion.swType = targetSwType;
 
-      const { JSDOM } = jsdom;
-      const dom = new JSDOM(swVersion.versionDesc, {
-        contentType: 'text/html',
-        includeNodeLocations: true,
-      });
-      const document = dom.window.document;
-      const imgElements = document.querySelectorAll('img');
-      for (const editorImg of imgElements) {
-        let imgSize = {
-          ...(editorImg.style.width && {
-            w: Number(editorImg.style.width.replace(/px$/, '')),
-          }),
-          ...(editorImg.style.height && {
-            h: Number(editorImg.style.height.replace(/px$/, '')),
-          }),
-        };
-        const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(
-          editorImg.src,
-          imgSize,
-        );
-        editorImg.src = uploadedImg;
-      }
-      const updatedHtmlContent = document.body.innerHTML;
+      const updatedHtmlContent = await this.changeSwVersionContentToUpload(
+        swVersion.versionDesc,
+      );
+
       createdSwVersion.versionDesc = updatedHtmlContent;
 
       return await this.swVersionRepository.save(createdSwVersion);
@@ -111,6 +92,16 @@ export class SwVersionService {
     swVersion: UpdateSwVersionDto,
   ): Promise<any> {
     try {
+      const targetSwVersion = await this.getSwVersionById(id);
+      if (!targetSwVersion) {
+        throw new NotFoundException('Software Version not found');
+      }
+
+      const updatedHtmlContent = await this.changeSwVersionContentToUpload(
+        swVersion.versionDesc,
+      );
+      swVersion.versionDesc = updatedHtmlContent;
+
       return await this.swVersionRepository.update(id, swVersion);
     } catch (error) {
       if (error instanceof QueryFailedError) {
@@ -125,5 +116,37 @@ export class SwVersionService {
       }
       throw error;
     }
+  }
+
+  private async changeSwVersionContentToUpload(
+    content: string,
+  ): Promise<string> {
+    const { JSDOM } = jsdom;
+    const dom = new JSDOM(content, {
+      contentType: 'text/html',
+      includeNodeLocations: true,
+    });
+    const document = dom.window.document;
+    const imgElements = document.querySelectorAll('img');
+    for (const editorImg of imgElements) {
+      let imgSize = {
+        ...(editorImg.style.width && {
+          w: Number(editorImg.style.width.replace(/px$/, '')),
+        }),
+        ...(editorImg.style.height && {
+          h: Number(editorImg.style.height.replace(/px$/, '')),
+        }),
+      };
+      if (editorImg.src.includes('data:image')) {
+        const uploadedImg = await this.uploadsService.uploadImageFromTextEditor(
+          editorImg.src,
+          imgSize,
+        );
+        editorImg.src = uploadedImg;
+      }
+    }
+
+    const updatedHtmlContent = document.body.innerHTML;
+    return updatedHtmlContent;
   }
 }
