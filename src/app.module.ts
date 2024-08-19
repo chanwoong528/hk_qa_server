@@ -1,8 +1,10 @@
 import { Global, Logger, Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bullmq';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -22,17 +24,43 @@ import { LogModule } from './log/log.module';
 import { TestUnitModule } from './test-unit/test-unit.module';
 import { ReactionModule } from './reaction/reaction.module';
 import { SseModule } from './sse/sse.module';
+import { AppConsumer } from './app.consumer';
+import { BullBoardModule } from "@bull-board/nestjs";
+import { ExpressAdapter } from "@bull-board/express";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+
 // import { EventsModule } from './events/events.module';//socket
 
 @Global()
 @Module({
   imports: [
+    BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+    BullBoardModule.forRoot({
+      route: '/queues',
+      adapter: ExpressAdapter // Or FastifyAdapter from `@bull-board/fastify`
+    }),
+
+    BullModule.registerQueue({
+      name: 'queue'
+    }),
+    BullBoardModule.forFeature({
+      name: 'queue',
+      adapter: BullMQAdapter, //or use BullAdapter if you're using bull instead of bullMQ
+    }),
+
     EventEmitterModule.forRoot(),
+
     ConfigModule.forRoot({
       envFilePath: `env/${process.env.NODE_ENV}.env`,
       // envFilePath: `env/prod.env`,
       isGlobal: true,
     }),
+
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -72,13 +100,14 @@ import { SseModule } from './sse/sse.module';
   ],
   controllers: [AppController],
   providers: [
-
     AppService,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
     Logger,
+    AppConsumer
   ],
+  exports: [BullModule]
 })
 export class AppModule { }

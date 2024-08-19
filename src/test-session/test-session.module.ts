@@ -8,7 +8,6 @@ import { SwVersionModule } from 'src/sw-version/sw-version.module';
 import { UserRepository } from 'src/user/user.repository';
 import { MailService } from 'src/mail/mail.service';
 import { UploadsService } from 'src/uploads/uploads.service';
-import { LogService } from 'src/log/log.service';
 import { LogModule } from 'src/log/log.module';
 
 @Module({
