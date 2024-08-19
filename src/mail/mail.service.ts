@@ -6,6 +6,7 @@ import { SwVersion } from 'src/sw-version/sw-version.entity';
 import axios from 'axios';
 import { SwType } from 'src/sw-type/sw-type.entity';
 import { JwtService } from '@nestjs/jwt';
+import { E_SendType } from 'src/enum';
 
 @Injectable()
 export class MailService {
@@ -13,9 +14,38 @@ export class MailService {
     private readonly mailerService: MailerService,
     private configService: ConfigService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
   private readonly TEAMS_URL =
     'https://prod2-01.southeastasia.logic.azure.com:443/workflows/ed6732f462cc46bcbf444511cc55eb6b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Y9fceOlwg8KS3xGtNMDvvrCIXO80oj7gHSbOTdtPyn0';
+
+  sendMailWrapFunction(
+    typeEmail: E_SendType,
+    to: User | User[],
+    token?: string,
+    swVersion?: SwVersion) {
+    switch (typeEmail) {
+
+      case E_SendType.verification:
+        this.sendVerificationMail(to as User, token);
+        break;
+
+      case E_SendType.forgotPassword:
+        this.sendForgotPasswordMail(to as User);
+        break;
+
+      case E_SendType.testerAdded:
+        this.sendAddedAsTesterMail(to as User, swVersion);
+        break;
+
+      case E_SendType.testFinished:
+        this.testFinishedMail(to as User[], swVersion);
+        break;
+      default:
+        throw new Error('Invalid email send type');
+    }
+
+  }
+
   sendVerificationMail(user: User, token: string): void {
     this.mailerService.sendMail({
       to: user.email,

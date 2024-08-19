@@ -14,10 +14,11 @@ import { CreateTestSessionDto, PutTestSessionListDto, UpdateTestSessionDto } fro
 
 import { UserRepository } from 'src/user/user.repository';
 import { SwVersionService } from 'src/sw-version/sw-version.service';
-import { E_LogType, E_TestStatus } from 'src/enum';
-import { MailService } from 'src/mail/mail.service';
+import { E_LogType, E_SendToQue, E_SendType, E_TestStatus } from 'src/enum';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { LogService } from 'src/log/log.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class TestSessionService {
@@ -26,9 +27,11 @@ export class TestSessionService {
     private readonly testSessionRepository: Repository<TestSession>,
     private readonly userRepository: UserRepository,
     private readonly swVersionService: SwVersionService,
-    private readonly mailService: MailService,
     private readonly uploadsService: UploadsService,
-    private readonly logService: LogService
+    private readonly logService: LogService,
+
+    @InjectQueue('queue')
+    private readonly mQue: Queue,
   ) { }
 
   async getTestSessions(): Promise<TestSession[]> {
@@ -136,14 +139,9 @@ export class TestSessionService {
         const updatedHtmlContent = document.body.innerHTML;
         objTestSession.reasonContent = updatedHtmlContent;
 
-
         const tobeLogged = await this.getTestSessionById(testSessionId);
         this.logService.postLog({ logType: E_LogType.testerStatus, content: tobeLogged })
-
       }
-
-
-
 
       const updatedResult = await this.testSessionRepository.update(
         testSessionId,
@@ -157,12 +155,14 @@ export class TestSessionService {
         .map((testSession) => testSession.status)
         .every((status) => status === E_TestStatus.passed)
       if (isTestAllPass) {
-        this.mailService.testFinishedMail(
-          allTestSessions.map((testSession) => testSession.user),
-          targetSwVersion
-        )
+
+        await this.mQue.add(E_SendToQue.email, {
+          sendType: E_SendType.testFinished,
+          user: allTestSessions.map((testSession) => testSession.user),
+          swVersion: targetSwVersion
+        })
+
       }
-      // Check if all test sessions are passed and send an email IF all are passed
 
       return updatedResult
     } catch (error) {
@@ -203,12 +203,17 @@ export class TestSessionService {
         });
 
         promiseArr.push(await Promise.all(addPromise))
+
         addPromise.forEach(async (addedTester) => {
-          //TODO: 
 
           const receiverInfo = (await addedTester).user
           const swVersion = (await addedTester).swVersion
-          this.mailService.sendAddedAsTesterMail(receiverInfo, swVersion)
+
+          await this.mQue.add(E_SendToQue.email, {
+            sendType: E_SendType.testerAdded,
+            user: receiverInfo,
+            swVersion
+          })
 
         })
       }

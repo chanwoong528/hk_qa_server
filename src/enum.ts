@@ -10,6 +10,16 @@ export enum E_UserStatus {
 }
 
 
+export enum E_SendToQue {
+  email = "email",
+  teams = "teams",
+}
+export enum E_SendType {
+  verification = 'verification',
+  forgotPassword = 'forgotPassword',
+  testerAdded = 'testerAdded',
+  testFinished = 'testFinished',
+}
 
 export enum E_TestStatus {
   pending = 'pending',

@@ -10,20 +10,25 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { User } from './user.entity';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { UpdateResult } from 'typeorm';
+import { Queue } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
+
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { Roles } from 'src/common/decorator/roles.decorator';
-import { E_Role } from 'src/enum';
-import { UserService } from './user.service';
-import { MailService } from 'src/mail/mail.service';
 
+import { User } from './user.entity';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { UserService } from './user.service';
+
+import { E_Role, E_SendToQue, E_SendType } from 'src/enum';
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly mailService: MailService,
+
+    @InjectQueue('queue')
+    private readonly mQue: Queue,
   ) { }
 
   @Get()
@@ -42,8 +47,12 @@ export class UserController {
       throw new NotFoundException('User does not exist!');
     }
 
-    this.mailService.sendForgotPasswordMail(user);
+    await this.mQue.add(E_SendToQue.email, {
+      sendType: E_SendType.forgotPassword,
+      user: user,
+    })
     return { message: 'Email sent!' };
+
   }
 
 
@@ -63,14 +72,14 @@ export class UserController {
   @Roles(E_Role.master)
   @UseGuards(AuthGuard)
   async createUser(@Body() user: CreateUserDto): Promise<User> {
-    //TODO: have to send verification Email
 
     const createdUser = await this.userService.create(user);
 
-    this.mailService.sendVerificationMail(
-      createdUser,
-      createdUser.verificationToken,
-    );
+    await this.mQue.add(E_SendToQue.email, {
+      sendType: E_SendType.verification,
+      user: createdUser,
+      token: createdUser.verificationToken,
+    })
 
     return createdUser;
   }
