@@ -35,16 +35,25 @@ export class UserService {
     return { ...foundUser, isPwDefault: isPwDefault };
   }
 
-  async findOneByEmail(email: string): Promise<User> {
+  async findOneByEmail(email: string, sendEmail?: boolean): Promise<User & { verificationToken?: string }> {
 
     const foundUserByEmail = await this.userRepository.findOne({
       where: { email },
       select: ['id', 'username', 'email', 'role', 'pw', 'userStatus'],
     });
-    console.log(foundUserByEmail)
+
     if (!foundUserByEmail) throw new NotFoundException('User not found');
 
-    return foundUserByEmail;
+    if (!!sendEmail) {
+      const verificationToken = await this.jwtService.signAsync({ id: foundUserByEmail.id, }, {
+        expiresIn: "1d",
+        secret: this.configService.get('JWT_SECRET'),
+      });
+      return { ...foundUserByEmail, verificationToken: verificationToken };
+    }
+
+
+    return foundUserByEmail
   }
 
   async create(user: CreateUserDto): Promise<User & { verificationToken: string }> {
@@ -62,8 +71,7 @@ export class UserService {
     const verificationToken = await this.jwtService.signAsync({ id: createdUser.id, }, {
       expiresIn: "1d",
       secret: this.configService.get('JWT_SECRET'),
-    }
-    );
+    });
 
     return { ...createdUser, verificationToken: verificationToken };
   }

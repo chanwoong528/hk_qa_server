@@ -39,6 +39,7 @@ export class UserController {
     }
     return this.userService.findAll();
   }
+
   @Post('forgot-password')
   async forgotPassword(@Body() body) {
     const user = await this.userService.findOneByEmail(body.email);
@@ -46,17 +47,27 @@ export class UserController {
     if (!user) {
       throw new NotFoundException('User does not exist!');
     }
-
     await this.mQue.add(E_SendToQue.email, {
       sendType: E_SendType.forgotPassword,
       user: user,
     })
     return { message: 'Email sent!' };
-
   }
 
+  @Post("send-verification")
+  @UseGuards(AuthGuard)
+  async sendVerificationEmail(@Body() body) {
 
+    const user = await this.userService.findOneByEmail(body.email, true);
 
+    await this.mQue.add(E_SendToQue.email, {
+      sendType: E_SendType.verification,
+      user: user,
+      token: user.verificationToken
+    })
+
+    return user
+  }
 
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe()) id: string): Promise<User> {
