@@ -33,6 +33,7 @@ export class AuthService {
     }
 
     if (existUser.userStatus !== E_UserStatus.ok) {
+      console.log(existUser.userStatus, E_UserStatus.ok)
       throw new UnauthorizedException('Email is not verified or  User has been blocked.')
     }
 

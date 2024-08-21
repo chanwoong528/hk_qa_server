@@ -39,8 +39,9 @@ export class UserService {
 
     const foundUserByEmail = await this.userRepository.findOne({
       where: { email },
-      select: ['id', 'username', 'email', 'role', 'pw'],
+      select: ['id', 'username', 'email', 'role', 'pw', 'userStatus'],
     });
+    console.log(foundUserByEmail)
     if (!foundUserByEmail) throw new NotFoundException('User not found');
 
     return foundUserByEmail;
