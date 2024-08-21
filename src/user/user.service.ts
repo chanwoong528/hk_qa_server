@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 
 import { CreateUserDto, UpdateUserDto } from './user.dto';
@@ -29,16 +29,19 @@ export class UserService {
     if (!id) throw new NotFoundException('User not found');
 
     const foundUser = await this.userRepository.findOneByUUID(id);
+
     const isPwDefault = await bcrypt.compare("123456", foundUser.pw);
 
     return { ...foundUser, isPwDefault: isPwDefault };
   }
 
   async findOneByEmail(email: string): Promise<User> {
+
     const foundUserByEmail = await this.userRepository.findOne({
       where: { email },
       select: ['id', 'username', 'email', 'role', 'pw'],
     });
+    if (!foundUserByEmail) throw new NotFoundException('User not found');
 
     return foundUserByEmail;
   }

@@ -20,10 +20,11 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   @Post()
   async signIn(@Body() userLoginInfo: SignInDto) {
+
     return this.authService.signIn(userLoginInfo.email, userLoginInfo.pw);
   }
 
@@ -48,7 +49,7 @@ export class AuthController {
       throw new InternalServerErrorException('Internal Server Error');
     }
   }
-  
+
   @Post('verify-email')
   async verifyFirstLogin(@Request() req, @Body() reqBody: { token: string }) {
     const payload = await this.jwtService.verifyAsync(reqBody.token);

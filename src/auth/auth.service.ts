@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { UserService } from 'src/user/user.service';
 import { LoggedInDto } from './auth.dto';
 import { User } from 'src/user/user.entity';
+import { E_UserStatus } from 'src/enum';
 
 @Injectable()
 export class AuthService {
@@ -28,8 +29,13 @@ export class AuthService {
     const isPwDefault = await bcrypt.compare("123456", existUser?.pw);
     const isPwMatch = await bcrypt.compare(pwInput, existUser?.pw);
     if (!isPwMatch) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid Email or Password');
     }
+
+    if (existUser.userStatus !== E_UserStatus.ok) {
+      throw new UnauthorizedException('Email is not verified or  User has been blocked.')
+    }
+
 
     const { id, username, role } = existUser;
     const payload = { sub: id, username, role, email };
