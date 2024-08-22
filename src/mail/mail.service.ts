@@ -7,6 +7,12 @@ import axios from 'axios';
 import { SwType } from 'src/sw-type/sw-type.entity';
 import { JwtService } from '@nestjs/jwt';
 import { E_SendType } from 'src/enum';
+import { render } from '@react-email/render';
+
+import AddedAsTester from './templates/emails/AddedAsTester';
+import ForGotPassword from './templates/emails/ForgotPassword';
+import TestFinished from './templates/emails/TestFinished';
+import VerifyUserConfirmation from './templates/emails/VerifyUserConfirmation';
 
 @Injectable()
 export class MailService {
@@ -17,6 +23,13 @@ export class MailService {
   ) { }
   private readonly TEAMS_URL =
     'https://prod2-01.southeastasia.logic.azure.com:443/workflows/ed6732f462cc46bcbf444511cc55eb6b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Y9fceOlwg8KS3xGtNMDvvrCIXO80oj7gHSbOTdtPyn0';
+
+  private readonly EMAIL_HEADER_LOGO = '[한국일보 - HIQ]'
+
+  private generateReactEmail = (template) => {
+    const redneredTemplate = render(template);
+    return redneredTemplate
+  }
 
   sendMailWrapFunction(
     typeEmail: E_SendType,
@@ -47,34 +60,48 @@ export class MailService {
   }
 
   sendVerificationMail(user: User, token: string): void {
-    this.mailerService.sendMail({
-      to: user.email,
-      from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
-      subject: '[HK-QA] Please verify your email address',
-      template: 'verifyUserConfirmation',
-      context: {
+    const htmlEmail = this.generateReactEmail(
+      VerifyUserConfirmation({
         username: user.username,
         token: token,
         homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
-      },
-    });
-  }
-  sendAddedAsTesterMail(receiver: User, swInfo: SwVersion): void {
+      })
+    );
+
     this.mailerService.sendMail({
-      to: receiver.email,
+      to: user.email,
       from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
-      subject: '[HK-QA] You have been added as a tester',
-      template: 'addedAsTester',
-      context: {
+      subject: this.EMAIL_HEADER_LOGO + ' Please verify your email address',
+      html: htmlEmail
+    });
+
+  }
+
+  sendAddedAsTesterMail(receiver: User, swInfo: SwVersion): void {
+
+    const htmlEmail = this.generateReactEmail(
+      AddedAsTester({
         username: receiver.username,
         swInfo: swInfo,
         homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
-      },
+      })
+    );
+
+
+    this.mailerService.sendMail({
+      to: receiver.email,
+      from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
+      subject: this.EMAIL_HEADER_LOGO + ' You have been added as a tester',
+      html: htmlEmail
     });
+
+
+
     const htmlData =
-      '<div>You have been added To Test of <strong>' +
-      swInfo.versionTitle +
-      '</strong></div>';
+      '<img height="88" src="https://hk-qa-bucket.s3.ap-northeast-2.amazonaws.com/hiq_logo.png" style="display:block;outline:none;border:none;text-decoration:none" width="212" loading="lazy">'
+      + '<div>You have been added To Test of <strong>'
+      + swInfo.versionTitle
+      + '</strong></div>';
 
     const axiosBody = {
       type: 'message',
@@ -100,23 +127,30 @@ export class MailService {
   }
 
   testFinishedMail(receiverList: User[], swInfo: SwVersion): void {
+
     receiverList.forEach((receiver) => {
-      this.mailerService.sendMail({
-        to: receiver.email,
-        from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
-        subject: '[HK-QA] Test finished',
-        template: 'testFinished',
-        context: {
+
+      const htmlEmail = this.generateReactEmail(
+        TestFinished({
           username: receiver.username,
           swInfo: swInfo,
           homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
-        },
+        })
+      );
+
+      this.mailerService.sendMail({
+        to: receiver.email,
+        from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
+        subject: this.EMAIL_HEADER_LOGO + ' finished',
+        html: htmlEmail
       });
     });
+
     const htmlData =
-      '<div>All Testers marked QA as passed, for Version:  <strong>' +
-      swInfo.versionTitle +
-      '</strong> Please get ready for deployment. </div>';
+      '<img height="88" src="https://hk-qa-bucket.s3.ap-northeast-2.amazonaws.com/hiq_logo.png" style="display:block;outline:none;border:none;text-decoration:none" width="212" loading="lazy">'
+      + '<div>All Testers marked QA as passed, for Version:  <strong>'
+      + swInfo.versionTitle
+      + '</strong> Please get ready for deployment. </div>';
     receiverList.forEach((receiver) => {
       const axiosBody = {
         type: 'message',
@@ -152,16 +186,20 @@ export class MailService {
       },
     );
 
-    this.mailerService.sendMail({
-      to: user.email,
-      from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
-      subject: '[HK-QA] Reset your password',
-      template: 'forgotPassword',
-      context: {
+
+    const htmlEmail = this.generateReactEmail(
+      ForGotPassword({
         username: user.username,
         token: resetPwToken,
         homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
-      },
+      })
+    );
+
+    this.mailerService.sendMail({
+      to: user.email,
+      from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
+      subject: this.EMAIL_HEADER_LOGO + ' Reset your password',
+      html: htmlEmail
     });
   }
 }
