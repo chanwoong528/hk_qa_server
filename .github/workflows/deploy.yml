@@ -59,7 +59,7 @@ jobs:
       - name: build server files
         working-directory: ./
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: zip file
