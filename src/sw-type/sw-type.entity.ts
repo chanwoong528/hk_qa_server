@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -38,7 +39,8 @@ export class SwType {
   @ManyToOne((type) => User, (user) => user)
   user: User;
 
-  @OneToMany((type) => SwVersion, (swVersion) => swVersion)
+  @OneToMany((type) => SwVersion, (swVersion) => swVersion.swType)
+  @JoinColumn()
   swVersions: SwVersion[];
 
 

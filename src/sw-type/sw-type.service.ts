@@ -28,7 +28,7 @@ export class SwTypeService {
   //GET_ALL
   async getSwTypes(): Promise<SwType[]> {
 
-    return await this.swTypeRepository.find({ relations: ['user'], where: { showStatus: "Y" } });
+    return await this.swTypeRepository.find({ relations: ['user', 'swVersions', 'swVersions.testSessions'], where: { showStatus: "Y" } });
   }
 
   //UPDATE
