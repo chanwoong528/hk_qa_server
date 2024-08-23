@@ -42,6 +42,9 @@ export class SwVersion {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Column({ nullable: true })
+  dueDate: string;
+
   @ManyToOne((type) => User, (user) => user)
   user: User;
 

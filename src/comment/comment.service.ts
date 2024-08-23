@@ -91,8 +91,11 @@ export class CommentService {
     return newComm;
   }
 
-  async getCommentsBySwVersionId(swVersionId: string): Promise<Comment[]> {
-    return await this.commentRepository.find({
+  async getCommentsBySwVersionId(swVersionId: string, page: number):
+    Promise<{ commentList: Comment[]; page: number; total: number, lastPage: number }> {
+    const take = 5;
+
+    const [commentList, total] = await this.commentRepository.findAndCount({
       relations: [
         'user',
         'swVersion',
@@ -111,7 +114,17 @@ export class CommentService {
         parentComment: IsNull(),
       },
       order: { createdAt: 'DESC' },
+      skip: (page - 1) * take,
+      take: take
     });
+
+    console.log('commentList', commentList.length);
+    return {
+      commentList: commentList,
+      page: page,
+      total: total,
+      lastPage: Math.ceil(total / take),
+    };
   }
   async getCommentById(commentId: string): Promise<Comment> {
     if (!commentId) throw new NotFoundException('Comment not found');

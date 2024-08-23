@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { Comment } from './comment.entity';
 import { CommentService } from './comment.service';
@@ -19,8 +19,9 @@ export class CommentController {
   @UseGuards(AuthGuard)
   async getCommentsBySwVersionId(
     @Param('swVersionId', new ParseUUIDPipe()) swVersionId: string,
-  ): Promise<Comment[]> {
-    const commentList = await this.commentService.getCommentsBySwVersionId(swVersionId);
+    @Query('page') page: number = 1
+  ): Promise<{ commentList: Comment[]; page: number; total: number, lastPage: number }> {
+    const commentList = await this.commentService.getCommentsBySwVersionId(swVersionId, Number(page));
     return commentList
   }
 

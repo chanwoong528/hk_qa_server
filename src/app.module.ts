@@ -74,7 +74,7 @@ import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
         entities: [User],
         autoLoadEntities: true,
         synchronize: true,
-        logging: false,
+        logging: configService.get('NODE_ENV') === 'prod' ? false : true,
         timezone: 'local',
         ssl: configService.get('NODE_ENV') === 'prod' ?
           {
