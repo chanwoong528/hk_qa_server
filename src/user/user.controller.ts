@@ -29,7 +29,7 @@ export class UserController {
 
     @InjectQueue('queue')
     private readonly mQue: Queue,
-  ) { }
+  ) {}
 
   @Get()
   @UseGuards(AuthGuard)
@@ -50,23 +50,22 @@ export class UserController {
     await this.mQue.add(E_SendToQue.email, {
       sendType: E_SendType.forgotPassword,
       user: user,
-    })
+    });
     return { message: 'Email sent!' };
   }
 
-  @Post("send-verification")
+  @Post('send-verification')
   @UseGuards(AuthGuard)
   async sendVerificationEmail(@Body() body) {
-
     const user = await this.userService.findOneByEmail(body.email, true);
 
     await this.mQue.add(E_SendToQue.email, {
       sendType: E_SendType.verification,
       user: user,
-      token: user.verificationToken
-    })
+      token: user.verificationToken,
+    });
 
-    return user
+    return user;
   }
 
   @Get(':id')
@@ -83,14 +82,13 @@ export class UserController {
   @Roles(E_Role.master)
   @UseGuards(AuthGuard)
   async createUser(@Body() user: CreateUserDto): Promise<User> {
-
     const createdUser = await this.userService.create(user);
 
     await this.mQue.add(E_SendToQue.email, {
       sendType: E_SendType.verification,
       user: createdUser,
       token: createdUser.verificationToken,
-    })
+    });
 
     return createdUser;
   }
