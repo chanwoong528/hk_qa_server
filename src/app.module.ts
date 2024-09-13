@@ -25,12 +25,11 @@ import { TestUnitModule } from './test-unit/test-unit.module';
 import { ReactionModule } from './reaction/reaction.module';
 import { SseModule } from './sse/sse.module';
 import { AppConsumer } from './app.consumer';
-import { BullBoardModule } from "@bull-board/nestjs";
-import { ExpressAdapter } from "@bull-board/express";
-import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { BullBoardModule } from '@bull-board/nestjs';
+import { ExpressAdapter } from '@bull-board/express';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 
 // import { EventsModule } from './events/events.module';//socket
-import { SwManagerModule } from './sw-manager/sw-manager.module';
 import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
 
 @Global()
@@ -44,11 +43,11 @@ import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
     }),
     BullBoardModule.forRoot({
       route: '/queues',
-      adapter: ExpressAdapter // Or FastifyAdapter from `@bull-board/fastify`
+      adapter: ExpressAdapter, // Or FastifyAdapter from `@bull-board/fastify`
     }),
 
     BullModule.registerQueue({
-      name: 'queue'
+      name: 'queue',
     }),
     BullBoardModule.forFeature({
       name: 'queue',
@@ -78,10 +77,12 @@ import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
         synchronize: true,
         logging: configService.get('NODE_ENV') === 'prod' ? false : true,
         timezone: 'local',
-        ssl: configService.get('NODE_ENV') === 'prod' ?
-          {
-            rejectUnauthorized: false,
-          } : false,
+        ssl:
+          configService.get('NODE_ENV') === 'prod'
+            ? {
+                rejectUnauthorized: false,
+              }
+            : false,
       }),
     }),
     AuthModule,
@@ -98,7 +99,6 @@ import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
     LogModule,
     MailModule,
     SseModule,
-    SwManagerModule,
     SwMaintainerModule,
     // EventsModule, //for socket
   ],
@@ -110,8 +110,8 @@ import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
       useClass: RolesGuard,
     },
     Logger,
-    AppConsumer
+    AppConsumer,
   ],
-  exports: [BullModule]
+  exports: [BullModule],
 })
-export class AppModule { }
+export class AppModule {}
