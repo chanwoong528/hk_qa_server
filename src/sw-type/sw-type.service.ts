@@ -11,7 +11,7 @@ export class SwTypeService {
     @InjectRepository(SwType)
     private readonly swTypeRepository: Repository<SwType>,
     private readonly userRepository: UserRepository,
-  ) { }
+  ) {}
 
   //CREATE
   async createSwType(swType: CreateSwTypeDto, userId: string): Promise<SwType> {
@@ -27,30 +27,34 @@ export class SwTypeService {
 
   //GET_ALL
   async getSwTypes(): Promise<SwType[]> {
-
     return await this.swTypeRepository.find({
       relations: ['user', 'swVersions', 'swVersions.testSessions'],
-      where: { showStatus: "Y" },
+      where: { showStatus: 'Y' },
       order: {
-        createdAt: "DESC",
+        createdAt: 'DESC',
         swVersions: {
-          createdAt: "DESC"
-        }
-      }
+          createdAt: 'DESC',
+        },
+      },
+    });
+  }
 
+  async getSwTypeById(id: string): Promise<SwType> {
+    return await this.swTypeRepository.findOne({
+      where: { swTypeId: id },
     });
   }
 
   //UPDATE
-  async updateSwTypeById(id: string, swType: UpdateSwTypeDto): Promise<UpdateResult> {
-
+  async updateSwTypeById(
+    id: string,
+    swType: UpdateSwTypeDto,
+  ): Promise<UpdateResult> {
     const updatedResult = await this.swTypeRepository.update(id, swType);
 
     if (updatedResult.affected === 0) {
       throw new NotFoundException('User does not exist!');
     }
-    return updatedResult
-
+    return updatedResult;
   }
-
 }
