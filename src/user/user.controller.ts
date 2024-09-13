@@ -64,7 +64,7 @@ export class UserController {
       user: user,
       token: user.verificationToken,
     });
-
+    ``;
     return user;
   }
 

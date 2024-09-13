@@ -30,6 +30,8 @@ import { ExpressAdapter } from "@bull-board/express";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 
 // import { EventsModule } from './events/events.module';//socket
+import { SwManagerModule } from './sw-manager/sw-manager.module';
+import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
 
 @Global()
 @Module({
@@ -96,6 +98,8 @@ import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
     LogModule,
     MailModule,
     SseModule,
+    SwManagerModule,
+    SwMaintainerModule,
     // EventsModule, //for socket
   ],
   controllers: [AppController],
