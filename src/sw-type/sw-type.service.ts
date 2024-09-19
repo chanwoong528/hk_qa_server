@@ -40,6 +40,8 @@ export class SwTypeService {
   }
 
   async getSwTypeById(id: string): Promise<SwType> {
+    if (!id) throw new NotFoundException('Software Type not found');
+
     return await this.swTypeRepository.findOne({
       where: { swTypeId: id },
     });

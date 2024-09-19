@@ -76,7 +76,7 @@ import { BoardModule } from './board/board.module';
         entities: [User],
         autoLoadEntities: true,
         synchronize: true,
-        logging: configService.get('NODE_ENV') === 'prod' ? false : true,
+        logging: configService.get('NODE_ENV') === 'prod' ? false : false,
         timezone: 'local',
         ssl:
           configService.get('NODE_ENV') === 'prod'

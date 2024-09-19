@@ -36,12 +36,13 @@ export class SwVersionService {
   }
 
   async getSwVersionById(swVersionId: string): Promise<SwVersion> {
-    if (!swVersionId) throw new NotFoundException('Software Version not found');
-
-    return await this.swVersionRepository.findOne({
+    const targetSw = await this.swVersionRepository.findOne({
       relations: ['swType', 'user'],
       where: { swVersionId: swVersionId },
     });
+
+    if (!targetSw) throw new NotFoundException('Software Version not found');
+    return targetSw;
   }
 
   async createSwVersion(

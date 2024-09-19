@@ -12,6 +12,7 @@ import {
 import { User } from 'src/user/user.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
 import { Reaction } from 'src/reaction/reaction.entity';
+import { Board } from 'src/board/board.entity';
 
 @Entity({ name: 'comment', schema: 'public', synchronize: true })
 export class Comment {
@@ -43,8 +44,21 @@ export class Comment {
   @ManyToOne((type) => User, (user) => user)
   user: User;
 
-  @ManyToOne((type) => SwVersion, (swVersion) => swVersion)
-  swVersion: SwVersion;
+  @ManyToOne((type) => SwVersion, (swVersion) => swVersion, {
+    nullable: true,
+    eager: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  swVersion?: SwVersion;
+
+  @ManyToOne((type) => Board, (board) => board, {
+    nullable: true,
+    eager: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  board?: Board;
 
   @OneToMany(
     (type) => Reaction,
