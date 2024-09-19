@@ -31,6 +31,7 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 
 // import { EventsModule } from './events/events.module';//socket
 import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
+import { BoardModule } from './board/board.module';
 
 @Global()
 @Module({
@@ -75,7 +76,7 @@ import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
         entities: [User],
         autoLoadEntities: true,
         synchronize: true,
-        logging: configService.get('NODE_ENV') === 'prod' ? false : true,
+        logging: configService.get('NODE_ENV') === 'prod' ? false : false,
         timezone: 'local',
         ssl:
           configService.get('NODE_ENV') === 'prod'
@@ -100,6 +101,7 @@ import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
     MailModule,
     SseModule,
     SwMaintainerModule,
+    BoardModule,
     // EventsModule, //for socket
   ],
   controllers: [AppController],

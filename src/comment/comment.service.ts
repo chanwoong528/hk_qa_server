@@ -1,3 +1,4 @@
+import { BoardService } from './../board/board.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +11,8 @@ import { UserService } from 'src/user/user.service';
 import { SwVersionService } from 'src/sw-version/sw-version.service';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { SseService } from 'src/sse/sse.service';
+import { Board } from 'src/board/board.entity';
+import { SwVersion } from 'src/sw-version/sw-version.entity';
 
 @Injectable()
 export class CommentService {
@@ -18,22 +21,31 @@ export class CommentService {
     private readonly commentRepository: Repository<Comment>,
     private readonly userService: UserService,
     private readonly swVersionService: SwVersionService,
+    private readonly boardService: BoardService,
     private readonly uploadsService: UploadsService,
     private readonly sseService: SseService,
-  ) { }
+  ) {}
 
   async createComment(commentInfo: CreateCommentDto): Promise<Comment> {
     const author = await this.userService.findOneById(commentInfo.userId);
-
     if (!author) {
       throw new NotFoundException('User not found');
     }
-    const swVersion = await this.swVersionService.getSwVersionById(
-      commentInfo.swVersionId,
-    );
-    if (!swVersion) {
+
+    const targetParentObject = !!commentInfo.swVersionId
+      ? await this.swVersionService.getSwVersionById(commentInfo.swVersionId)
+      : await this.boardService.getBoardDetail(commentInfo.boardId);
+
+    if (!targetParentObject) {
       throw new NotFoundException('SwVersion not found');
     }
+
+    let newComment = new Comment(commentInfo);
+    newComment.user = author;
+
+    if (commentInfo.boardId) newComment.board = targetParentObject as Board;
+    if (commentInfo.swVersionId)
+      newComment.swVersion = targetParentObject as SwVersion;
 
     const { JSDOM } = jsdom;
     const dom = new JSDOM(commentInfo.content, {
@@ -68,7 +80,6 @@ export class CommentService {
       editorImg.src = uploadedImg;
     }
     const updatedHtmlContent = document.body.innerHTML;
-    let newComment = new Comment(commentInfo);
 
     newComment.content = updatedHtmlContent;
 
@@ -83,16 +94,21 @@ export class CommentService {
       newComment.parentComment = parentComment;
     }
 
-    newComment.user = author;
-    newComment.swVersion = swVersion;
-    const newComm = await this.commentRepository.save(newComment)
+    const newComm = await this.commentRepository.save(newComment);
 
     this.sseService.emitCommentPostedEvent(newComm.commentId);
     return newComm;
   }
 
-  async getCommentsBySwVersionId(swVersionId: string, page: number):
-    Promise<{ commentList: Comment[]; page: number; total: number, lastPage: number }> {
+  async getCommentsBySwVersionId(
+    swVersionId: string,
+    page: number,
+  ): Promise<{
+    commentList: Comment[];
+    page: number;
+    total: number;
+    lastPage: number;
+  }> {
     const take = 5;
 
     const [commentList, total] = await this.commentRepository.findAndCount({
@@ -115,10 +131,9 @@ export class CommentService {
       },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * take,
-      take: take
+      take: take,
     });
 
-    console.log('commentList', commentList.length);
     return {
       commentList: commentList,
       page: page,
@@ -126,6 +141,49 @@ export class CommentService {
       lastPage: Math.ceil(total / take),
     };
   }
+
+  async getCommentsByBoardId(
+    boardId: string,
+    page: number,
+  ): Promise<{
+    commentList: Comment[];
+    page: number;
+    total: number;
+    lastPage: number;
+  }> {
+    const take = 5;
+
+    const [commentList, total] = await this.commentRepository.findAndCount({
+      relations: [
+        'user',
+        'swVersion',
+        'childComments',
+        'childComments.user',
+        'childComments.reactions',
+        'childComments.reactions.user',
+        'parentComment',
+        'reactions',
+        'reactions.user',
+      ],
+      where: {
+        board: {
+          boardId: boardId,
+        },
+        parentComment: IsNull(),
+      },
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * take,
+      take: take,
+    });
+
+    return {
+      commentList: commentList,
+      page: page,
+      total: total,
+      lastPage: Math.ceil(total / take),
+    };
+  }
+
   async getCommentById(commentId: string): Promise<Comment> {
     if (!commentId) throw new NotFoundException('Comment not found');
 

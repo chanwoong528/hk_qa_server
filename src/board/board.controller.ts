@@ -1,0 +1,46 @@
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Post,
+  Request,
+  Body,
+  Query,
+} from '@nestjs/common';
+import { BoardService } from './board.service';
+import { AuthGuard } from 'src/common/guard/auth.guard';
+import { CreateBaordDto } from './board.dto';
+import { Board } from './board.entity';
+
+@Controller('board')
+export class BoardController {
+  constructor(private readonly boardService: BoardService) {}
+
+  @UseGuards(AuthGuard)
+  @Get(':swTypeId')
+  async getBoards(
+    @Param('swTypeId') swTypeId: string,
+    @Query('boardType') boardType: string,
+  ): Promise<Board[]> {
+    return await this.boardService.getBoards(swTypeId, boardType);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('detail/:boardId')
+  async getBoardDetail(@Param('boardId') boardId: string): Promise<Board> {
+    return await this.boardService.getBoardDetail(boardId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post()
+  async createBoard(
+    @Body() createBoardParam: CreateBaordDto,
+    @Request() req,
+  ): Promise<Board> {
+    const { sub } = req.user;
+    createBoardParam.userId = sub;
+
+    return await this.boardService.createBoard(createBoardParam);
+  }
+}

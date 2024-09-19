@@ -8,16 +8,17 @@ import { SwVersionModule } from 'src/sw-version/sw-version.module';
 import { UsersModule } from 'src/user/user.module';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { SseService } from 'src/sse/sse.service';
-
+import { BoardModule } from 'src/board/board.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Comment]),
     UsersModule,
-    SwVersionModule
+    SwVersionModule,
+    BoardModule,
   ],
   controllers: [CommentController],
   providers: [CommentService, UserRepository, UploadsService, SseService],
   exports: [CommentService],
 })
-export class CommentModule { }
+export class CommentModule {}

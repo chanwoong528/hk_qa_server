@@ -1,11 +1,11 @@
 export class CreateCommentDto {
   // commentId:string
   content: string;
-  swVersionId: string;
+  swVersionId?: string;
+  boardId?: string;
   userId: string;
   parentId?: string;
 }
-
 
 // export class UpdateCommentDto {
 //   versionTitle?: string;
