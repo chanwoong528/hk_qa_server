@@ -55,9 +55,43 @@ export class MailService {
       case E_SendType.testFinished:
         this.testFinishedMail(to as User[], swVersion);
         break;
+      case E_SendType.inquery:
+        this.testFinishedMail(to as User[], swVersion);
+        break;
+
       default:
         throw new Error('Invalid email send type');
     }
+  }
+  sendToMaintainerInquery(user: User[], swInfo: SwVersion) {
+    const htmlEmail = this.generateReactEmail();
+
+    const htmlData =
+      this.HTML_LOGO_IMG + '<div>테스터가 문의 / 개발요청을 남겼습니다. </div>';
+    user.forEach((receiver) => {
+      const axiosBody = {
+        type: 'message',
+        attachments: [
+          {
+            contentType:
+              this.configService.get<string>('HOMEPAGE_URL') +
+              `/sw-type/${swInfo.swType.swTypeId}`,
+            content: {
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+              type: 'AdaptiveCard',
+              version: receiver.email,
+              body: [
+                {
+                  type: String() + htmlData,
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      axios.post(this.TEAMS_URL, axiosBody);
+    });
   }
 
   sendVerificationMail(user: User, token: string): void {
