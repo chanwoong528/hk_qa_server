@@ -12,6 +12,10 @@ import { UserRepository } from 'src/user/user.repository';
 import { SwTypeService } from 'src/sw-type/sw-type.service';
 import * as jsdom from 'jsdom';
 import { UploadsService } from 'src/uploads/uploads.service';
+import { SwMaintainerService } from 'src/sw-maintainer/sw-maintainer.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { E_SendToQue, E_SendType } from 'src/enum';
 
 @Injectable()
 export class BoardService {
@@ -21,6 +25,9 @@ export class BoardService {
     private readonly userRepository: UserRepository,
     private readonly swTypeService: SwTypeService,
     private readonly uploadsService: UploadsService,
+    private readonly swMaintainerService: SwMaintainerService,
+    @InjectQueue('queue')
+    private readonly mQue: Queue,
   ) {}
 
   async getBoards(
@@ -68,6 +75,18 @@ export class BoardService {
         boardParam.content,
       );
       newBoard.content = updatedContent;
+
+      if (newBoard.boardType === 'req') {
+        const allMaintainer =
+          await this.swMaintainerService.getMaintainerBySwTypeId(
+            boardParam.swTypeId,
+          );
+
+        await this.mQue.add(E_SendToQue.email, {
+          sendType: E_SendType.testFinished,
+          user: allMaintainer,
+        });
+      }
 
       return await this.boardRepository.save(newBoard);
     } catch (error) {

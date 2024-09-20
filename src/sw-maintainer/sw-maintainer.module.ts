@@ -11,5 +11,6 @@ import { SwTypeModule } from 'src/sw-type/sw-type.module';
   imports: [TypeOrmModule.forFeature([SwMaintainer]), JwtModule, SwTypeModule],
   controllers: [SwMaintainerController],
   providers: [SwMaintainerService, UserRepository],
+  exports: [SwMaintainerService],
 })
 export class SwMaintainerModule {}

@@ -18,7 +18,7 @@ interface AddedAsTesterProps {
   homepageUrl: string;
 }
 
-const AddedAsTester = ({ username, swInfo, homepageUrl }) => (
+const PostedInquery = ({ username, swInfo, homepageUrl }) => (
   <Html>
     <Head />
     <Body style={main}>
@@ -33,7 +33,6 @@ const AddedAsTester = ({ username, swInfo, homepageUrl }) => (
         <Heading style={secondary}>
           {username} 님,
           <br />
-          아래 프로젝트의 테스터로 등록되었습니다.
         </Heading>
         <Text style={Paralink}>{swInfo.swType.typeTitle}</Text>
         <Button

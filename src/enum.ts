@@ -9,16 +9,16 @@ export enum E_UserStatus {
   blocked = 'blocked',
 }
 
-
 export enum E_SendToQue {
-  email = "email",
-  teams = "teams",
+  email = 'email',
+  teams = 'teams',
 }
 export enum E_SendType {
   verification = 'verification',
   forgotPassword = 'forgotPassword',
   testerAdded = 'testerAdded',
   testFinished = 'testFinished',
+  inquery = 'inquery',
 }
 
 export enum E_TestStatus {
