@@ -78,7 +78,10 @@ export class MailService {
       this.mailerService.sendMail({
         to: receiver.email,
         from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
-        subject: this.EMAIL_HEADER_LOGO + ' 문의가 등록되었습니다.',
+        subject:
+          this.EMAIL_HEADER_LOGO +
+          swInfo.typeTitle +
+          '에 문의가 등록되었습니다.',
         html: htmlEmail,
       });
     });
@@ -86,6 +89,7 @@ export class MailService {
     users.forEach((receiver) => {
       const htmlData =
         this.HTML_LOGO_IMG +
+        `<strong>${swInfo.typeTitle}</strong>` +
         '<div>테스터가 문의 / 개발요청을 남겼습니다. </div>';
       const axiosBody = {
         type: 'message',
