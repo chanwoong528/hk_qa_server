@@ -13,6 +13,8 @@ import AddedAsTester from './templates/emails/AddedAsTester';
 import ForGotPassword from './templates/emails/ForgotPassword';
 import TestFinished from './templates/emails/TestFinished';
 import VerifyUserConfirmation from './templates/emails/VerifyUserConfirmation';
+import PostedInquery from './templates/emails/PostedInquery';
+import { SwType } from 'src/sw-type/sw-type.entity';
 
 @Injectable()
 export class MailService {
@@ -38,6 +40,7 @@ export class MailService {
     to: User | User[],
     token?: string,
     swVersion?: SwVersion,
+    swType?: SwType,
   ) {
     switch (typeEmail) {
       case E_SendType.verification:
@@ -56,26 +59,41 @@ export class MailService {
         this.testFinishedMail(to as User[], swVersion);
         break;
       case E_SendType.inquery:
-        this.testFinishedMail(to as User[], swVersion);
+        this.sendToMaintainerInquery(to as User[], swType);
         break;
 
       default:
         throw new Error('Invalid email send type');
     }
   }
-  sendToMaintainerInquery(user: User[], swInfo: SwVersion) {
-    const htmlEmail = this.generateReactEmail();
+  sendToMaintainerInquery(users: User[], swInfo: SwType) {
+    users.forEach((receiver) => {
+      const htmlEmail = this.generateReactEmail(
+        PostedInquery({
+          username: receiver.username,
+          swInfo: swInfo,
+          homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
+        }),
+      );
+      this.mailerService.sendMail({
+        to: receiver.email,
+        from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
+        subject: this.EMAIL_HEADER_LOGO + ' 문의가 등록되었습니다.',
+        html: htmlEmail,
+      });
+    });
 
-    const htmlData =
-      this.HTML_LOGO_IMG + '<div>테스터가 문의 / 개발요청을 남겼습니다. </div>';
-    user.forEach((receiver) => {
+    users.forEach((receiver) => {
+      const htmlData =
+        this.HTML_LOGO_IMG +
+        '<div>테스터가 문의 / 개발요청을 남겼습니다. </div>';
       const axiosBody = {
         type: 'message',
         attachments: [
           {
             contentType:
               this.configService.get<string>('HOMEPAGE_URL') +
-              `/sw-type/${swInfo.swType.swTypeId}`,
+              `/sw-type/${swInfo.swTypeId}`,
             content: {
               $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
               type: 'AdaptiveCard',

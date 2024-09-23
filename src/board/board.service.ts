@@ -1,3 +1,4 @@
+import { map } from 'rxjs';
 import {
   ConflictException,
   Injectable,
@@ -83,8 +84,9 @@ export class BoardService {
           );
 
         await this.mQue.add(E_SendToQue.email, {
-          sendType: E_SendType.testFinished,
-          user: allMaintainer,
+          sendType: E_SendType.inquery,
+          user: allMaintainer.map((maintainer) => maintainer.user),
+          swType: targetSwType,
         });
       }
 

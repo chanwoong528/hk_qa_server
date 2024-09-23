@@ -25,8 +25,8 @@ const VerifyUserConfirmation = ({ username, token, homepageUrl }) => (
       <Container style={container}>
         <Img
           src={`https://hk-qa-bucket.s3.ap-northeast-2.amazonaws.com/hiq_logo.png`}
-          width="212"
-          height="88"
+          width="120"
+          height="72"
           style={logo}
         />
         <Text style={tertiary}></Text>

@@ -1,15 +1,12 @@
-import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { Logger } from "@nestjs/common";
-import { Job } from "bullmq";
-import { E_SendToQue } from "./enum";
-import { MailService } from "./mail/mail.service";
-
+import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Logger } from '@nestjs/common';
+import { Job } from 'bullmq';
+import { E_SendToQue } from './enum';
+import { MailService } from './mail/mail.service';
 
 @Processor('queue')
 export class AppConsumer extends WorkerHost {
-  constructor(
-    private readonly mailService: MailService,
-  ) {
+  constructor(private readonly mailService: MailService) {
     super();
   }
   private readonly logger = new Logger(AppConsumer.name);
@@ -23,7 +20,8 @@ export class AppConsumer extends WorkerHost {
           job.data.sendType,
           job.data.user ? job.data.user : undefined,
           job.data.token ? job.data.token : undefined,
-          job.data.swVersion ? job.data.swVersion : undefined
+          job.data.swVersion ? job.data.swVersion : undefined,
+          job.data.swType ? job.data.swType : undefined,
         );
 
         return {
@@ -33,7 +31,6 @@ export class AppConsumer extends WorkerHost {
       case E_SendToQue.teams: {
         this.logger.log('Start processing job teams ' + job.id);
       }
-
     }
   }
 }

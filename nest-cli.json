@@ -5,8 +5,18 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "assets": [
-      { "include": "./env/*.env", "outDir": "./dist" },
-      { "include": "mail/templates/**/*.hbs", "outDir": "./dist" }
+      {
+        "include": "./env/*.env",
+        "outDir": "./dist"
+      },
+      {
+        "include": "mail/templates/**/*.hbs",
+        "outDir": "./dist"
+      },
+      {
+        "include": "mail/templates/**/*.tsx",
+        "outDir": "./dist"
+      }
     ],
     "watchAssets": true
   }

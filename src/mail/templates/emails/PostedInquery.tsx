@@ -12,7 +12,7 @@ import {
 
 import * as React from 'react';
 
-interface AddedAsTesterProps {
+interface PostedInqueryProps {
   username: string;
   swInfo: any;
   homepageUrl: string;
@@ -25,19 +25,22 @@ const PostedInquery = ({ username, swInfo, homepageUrl }) => (
       <Container style={container}>
         <Img
           src={`https://hk-qa-bucket.s3.ap-northeast-2.amazonaws.com/hiq_logo.png`}
-          width="212"
-          height="88"
+          width="120"
+          height="72"
           style={logo}
         />
-        <Text style={tertiary}></Text>
+        <Text style={tertiary}>
+          {swInfo.typeTitle}에 대한 문의가 등록되었습니다.
+        </Text>
+
         <Heading style={secondary}>
           {username} 님,
           <br />
         </Heading>
-        <Text style={Paralink}>{swInfo.swType.typeTitle}</Text>
+        <Text style={Paralink}>{swInfo.typeTitle}</Text>
         <Button
           style={button}
-          href={`${homepageUrl}/sw-type/${swInfo.swType.swTypeId}?open=${swInfo.swVersionId}`}
+          href={`${homepageUrl}/sw-type/${swInfo.swTypeId}`}
         >
           큐잉으로 가기
         </Button>
@@ -56,17 +59,16 @@ const PostedInquery = ({ username, swInfo, homepageUrl }) => (
   </Html>
 );
 
-AddedAsTester.PreviewProps = {
+PostedInquery.PreviewProps = {
   username: 'test',
   swInfo: {
-    swType: {
-      typeTitle: 'test sw type',
-    },
+    typeTitle: 'test sw type',
+    swTypeId: 'test sw type id',
   },
   homepageUrl: 'http://localhost:4321',
-} as AddedAsTesterProps;
+} as PostedInqueryProps;
 
-export default AddedAsTester;
+export default PostedInquery;
 
 const main = {
   backgroundColor: '#ffffff',
