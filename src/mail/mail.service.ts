@@ -1,18 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import axios from 'axios';
+import { render } from '@react-email/render';
+
 import { User } from 'src/user/user.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
-import axios from 'axios';
-import { SwType } from 'src/sw-type/sw-type.entity';
-import { JwtService } from '@nestjs/jwt';
 import { E_SendType } from 'src/enum';
-import { render } from '@react-email/render';
 
 import AddedAsTester from './templates/emails/AddedAsTester';
 import ForGotPassword from './templates/emails/ForgotPassword';
 import TestFinished from './templates/emails/TestFinished';
 import VerifyUserConfirmation from './templates/emails/VerifyUserConfirmation';
+import PostedInquery from './templates/emails/PostedInquery';
+import { SwType } from 'src/sw-type/sw-type.entity';
 
 @Injectable()
 export class MailService {
@@ -20,24 +22,27 @@ export class MailService {
     private readonly mailerService: MailerService,
     private configService: ConfigService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
   private readonly TEAMS_URL =
     'https://prod2-01.southeastasia.logic.azure.com:443/workflows/ed6732f462cc46bcbf444511cc55eb6b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Y9fceOlwg8KS3xGtNMDvvrCIXO80oj7gHSbOTdtPyn0';
 
-  private readonly EMAIL_HEADER_LOGO = '[한국일보 - HIQ]'
+  private readonly EMAIL_HEADER_LOGO = '[한국일보 - Qing]';
+  private readonly HTML_LOGO_IMG =
+    '<img height="88" src="https://hk-qa-bucket.s3.ap-northeast-2.amazonaws.com/hiq_logo.png" style="display:block;outline:none;border:none;text-decoration:none" width="212" loading="lazy">';
 
   private generateReactEmail = (template) => {
     const redneredTemplate = render(template);
-    return redneredTemplate
-  }
+    return redneredTemplate;
+  };
 
   sendMailWrapFunction(
     typeEmail: E_SendType,
     to: User | User[],
     token?: string,
-    swVersion?: SwVersion) {
+    swVersion?: SwVersion,
+    swType?: SwType,
+  ) {
     switch (typeEmail) {
-
       case E_SendType.verification:
         this.sendVerificationMail(to as User, token);
         break;
@@ -53,10 +58,58 @@ export class MailService {
       case E_SendType.testFinished:
         this.testFinishedMail(to as User[], swVersion);
         break;
+      case E_SendType.inquery:
+        this.sendToMaintainerInquery(to as User[], swType);
+        break;
+
       default:
         throw new Error('Invalid email send type');
     }
+  }
+  sendToMaintainerInquery(users: User[], swInfo: SwType) {
+    users.forEach((receiver) => {
+      const htmlEmail = this.generateReactEmail(
+        PostedInquery({
+          username: receiver.username,
+          swInfo: swInfo,
+          homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
+        }),
+      );
+      this.mailerService.sendMail({
+        to: receiver.email,
+        from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
+        subject: this.EMAIL_HEADER_LOGO + ' 문의가 등록되었습니다.',
+        html: htmlEmail,
+      });
+    });
 
+    users.forEach((receiver) => {
+      const htmlData =
+        this.HTML_LOGO_IMG +
+        '<div>테스터가 문의 / 개발요청을 남겼습니다. </div>';
+      const axiosBody = {
+        type: 'message',
+        attachments: [
+          {
+            contentType:
+              this.configService.get<string>('HOMEPAGE_URL') +
+              `/sw-type/${swInfo.swTypeId}`,
+            content: {
+              $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+              type: 'AdaptiveCard',
+              version: receiver.email,
+              body: [
+                {
+                  type: String() + htmlData,
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      axios.post(this.TEAMS_URL, axiosBody);
+    });
   }
 
   sendVerificationMail(user: User, token: string): void {
@@ -65,43 +118,38 @@ export class MailService {
         username: user.username,
         token: token,
         homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
-      })
+      }),
     );
 
     this.mailerService.sendMail({
       to: user.email,
       from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
       subject: this.EMAIL_HEADER_LOGO + ' Please verify your email address',
-      html: htmlEmail
+      html: htmlEmail,
     });
-
   }
 
   sendAddedAsTesterMail(receiver: User, swInfo: SwVersion): void {
-
     const htmlEmail = this.generateReactEmail(
       AddedAsTester({
         username: receiver.username,
         swInfo: swInfo,
         homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
-      })
+      }),
     );
-
 
     this.mailerService.sendMail({
       to: receiver.email,
       from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
-      subject: this.EMAIL_HEADER_LOGO + ' You have been added as a tester',
-      html: htmlEmail
+      subject: this.EMAIL_HEADER_LOGO + ' 테스터로 등록 되셨습니다.',
+      html: htmlEmail,
     });
 
-
-
     const htmlData =
-      '<img height="88" src="https://hk-qa-bucket.s3.ap-northeast-2.amazonaws.com/hiq_logo.png" style="display:block;outline:none;border:none;text-decoration:none" width="212" loading="lazy">'
-      + '<div>You have been added To Test of <strong>'
-      + swInfo.versionTitle
-      + '</strong></div>';
+      this.HTML_LOGO_IMG +
+      '<div>테스터로 등록 되었습니다. Version:  <strong>' +
+      swInfo.versionTitle +
+      '</strong></div>';
 
     const axiosBody = {
       type: 'message',
@@ -127,30 +175,28 @@ export class MailService {
   }
 
   testFinishedMail(receiverList: User[], swInfo: SwVersion): void {
-
     receiverList.forEach((receiver) => {
-
       const htmlEmail = this.generateReactEmail(
         TestFinished({
           username: receiver.username,
           swInfo: swInfo,
           homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
-        })
+        }),
       );
 
       this.mailerService.sendMail({
         to: receiver.email,
         from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
         subject: this.EMAIL_HEADER_LOGO + ' finished',
-        html: htmlEmail
+        html: htmlEmail,
       });
     });
 
     const htmlData =
-      '<img height="88" src="https://hk-qa-bucket.s3.ap-northeast-2.amazonaws.com/hiq_logo.png" style="display:block;outline:none;border:none;text-decoration:none" width="212" loading="lazy">'
-      + '<div>All Testers marked QA as passed, for Version:  <strong>'
-      + swInfo.versionTitle
-      + '</strong> Please get ready for deployment. </div>';
+      this.HTML_LOGO_IMG +
+      '<div>모든 테스터가 QA를 확인했습니다.  Version:  <strong>' +
+      swInfo.versionTitle +
+      '</strong> 배포 준비해주세요. </div>';
     receiverList.forEach((receiver) => {
       const axiosBody = {
         type: 'message',
@@ -186,20 +232,19 @@ export class MailService {
       },
     );
 
-
     const htmlEmail = this.generateReactEmail(
       ForGotPassword({
         username: user.username,
         token: resetPwToken,
         homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
-      })
+      }),
     );
 
     this.mailerService.sendMail({
       to: user.email,
       from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
-      subject: this.EMAIL_HEADER_LOGO + ' Reset your password',
-      html: htmlEmail
+      subject: this.EMAIL_HEADER_LOGO + ' 비밀번호 초기화 안내',
+      html: htmlEmail,
     });
   }
 }

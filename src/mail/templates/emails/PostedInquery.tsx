@@ -12,13 +12,13 @@ import {
 
 import * as React from 'react';
 
-interface AddedAsTesterProps {
+interface PostedInqueryProps {
   username: string;
   swInfo: any;
   homepageUrl: string;
 }
 
-const AddedAsTester = ({ username, swInfo, homepageUrl }) => (
+const PostedInquery = ({ username, swInfo, homepageUrl }) => (
   <Html>
     <Head />
     <Body style={main}>
@@ -29,46 +29,46 @@ const AddedAsTester = ({ username, swInfo, homepageUrl }) => (
           height="72"
           style={logo}
         />
-        <br />
-        <br />
+        <Text style={tertiary}>
+          {swInfo.typeTitle}에 대한 문의가 등록되었습니다.
+        </Text>
+
         <Heading style={secondary}>
-          안녕하세요 {username}님,
+          {username} 님,
           <br />
-          소프트웨어 [{swInfo.swType.typeTitle}]에 대한
-          <br /> 모든 테스터가 통과로 표시되었습니다.
         </Heading>
-        <Text>아래 소프트웨어 버전을 배포해주세요.</Text>
-        <Text style={Paralink}> {swInfo.swType.typeTitle}</Text>
+        <Text style={Paralink}>{swInfo.typeTitle}</Text>
         <Button
           style={button}
-          href={`${homepageUrl}/sw-type/${swInfo.swType.swTypeId}`}
+          href={`${homepageUrl}/sw-type/${swInfo.swTypeId}`}
         >
-          큐잉 홈페이지로 이동
+          큐잉으로 가기
         </Button>
 
         <Text style={paragraph}>
           문의 사항이 있으시면
+          <br />
+          아래 이메일로 연락 주세요.
+          <br />
           <Link href="mailto:mooncw@hankookilbo.com" style={link}>
             mooncw@hankookilbo.com
-          </Link>
-          <br />로 연락해주세요.
+          </Link>{' '}
         </Text>
       </Container>
     </Body>
   </Html>
 );
 
-AddedAsTester.PreviewProps = {
+PostedInquery.PreviewProps = {
   username: 'test',
   swInfo: {
-    swType: {
-      typeTitle: 'test sw type',
-    },
+    typeTitle: 'test sw type',
+    swTypeId: 'test sw type id',
   },
   homepageUrl: 'http://localhost:4321',
-} as AddedAsTesterProps;
+} as PostedInqueryProps;
 
-export default AddedAsTester;
+export default PostedInquery;
 
 const main = {
   backgroundColor: '#ffffff',
