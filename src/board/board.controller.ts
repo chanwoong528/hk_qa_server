@@ -22,8 +22,14 @@ export class BoardController {
   async getBoards(
     @Param('swTypeId') swTypeId: string,
     @Query('boardType') boardType: string,
-  ): Promise<Board[]> {
-    return await this.boardService.getBoards(swTypeId, boardType);
+    @Query('page') page: number = 1,
+  ): Promise<{
+    boardList: Board[];
+    page: number;
+    total: number;
+    lastPage: number;
+  }> {
+    return await this.boardService.getBoards(swTypeId, boardType, Number(page));
   }
 
   @UseGuards(AuthGuard)

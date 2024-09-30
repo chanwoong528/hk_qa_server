@@ -18,7 +18,7 @@ export class AuthService {
     private usersService: UserService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   async signIn(email: string, pwInput: string): Promise<LoggedInDto> {
     const existUser = await this.usersService.findOneByEmail(email);
@@ -26,23 +26,27 @@ export class AuthService {
       throw new NotFoundException('User does not exist!');
     }
 
-    const isPwDefault = await bcrypt.compare("123456", existUser?.pw);
+    const isPwDefault = await bcrypt.compare('123456', existUser?.pw);
     const isPwMatch = await bcrypt.compare(pwInput, existUser?.pw);
     if (!isPwMatch) {
       throw new UnauthorizedException('Invalid Email or Password');
     }
 
     if (existUser.userStatus !== E_UserStatus.ok) {
-      throw new UnauthorizedException('Email is not verified or  User has been blocked.')
+      throw new UnauthorizedException(
+        'Email is not verified or  User has been blocked.',
+      );
     }
-
 
     const { id, username, role } = existUser;
     const payload = { sub: id, username, role, email };
     const accToken = await this.jwtService.signAsync(payload);
 
     return {
-      id, username, role, email,
+      id,
+      username,
+      role,
+      email,
       isPwDefault: isPwDefault,
       access_token: accToken,
     };

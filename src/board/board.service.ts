@@ -34,8 +34,16 @@ export class BoardService {
   async getBoards(
     swTypeId: string,
     boardType: string = 'req',
-  ): Promise<Board[]> {
-    const targetBoards = await this.boardRepository.find({
+    page: number = 1,
+  ): Promise<{
+    boardList: Board[];
+    page: number;
+    total: number;
+    lastPage: number;
+  }> {
+    const take = 5;
+
+    const [targetBoards, total] = await this.boardRepository.findAndCount({
       relations: ['user'],
       where: {
         boardType: boardType,
@@ -43,10 +51,17 @@ export class BoardService {
           swTypeId: swTypeId,
         },
       },
+      skip: (page - 1) * take,
+      take: take,
     });
     if (!targetBoards) throw new NotFoundException('Boards not found');
 
-    return targetBoards;
+    return {
+      boardList: targetBoards,
+      page: page,
+      total: total,
+      lastPage: Math.ceil(total / take),
+    };
   }
   async getBoardDetail(boardId: string): Promise<Board> {
     const targetBoard = await this.boardRepository.findOne({
