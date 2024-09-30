@@ -227,7 +227,7 @@ export class CommentService {
     });
   }
 
-  async patchCommentContent(updateCommentDto: UpdateCommentDto) {
+  async patchCommentContent(updateCommentDto: UpdateCommentDto): Promise<any> {
     return await this.commentRepository.update(
       updateCommentDto.commentId,
       updateCommentDto,
