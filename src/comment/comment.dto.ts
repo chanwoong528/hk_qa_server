@@ -7,6 +7,11 @@ export class CreateCommentDto {
   parentId?: string;
 }
 
+export class UpdateCommentDto {
+  commentId: string;
+  content: string;
+}
+
 // export class UpdateCommentDto {
 //   versionTitle?: string;
 //   versionDesc?: string;
