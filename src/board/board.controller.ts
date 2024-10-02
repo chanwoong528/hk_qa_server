@@ -7,10 +7,11 @@ import {
   Request,
   Body,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { AuthGuard } from 'src/common/guard/auth.guard';
-import { CreateBaordDto } from './board.dto';
+import { CreateBoardDto, UpdateBoardDto } from './board.dto';
 import { Board } from './board.entity';
 
 @Controller('board')
@@ -41,12 +42,28 @@ export class BoardController {
   @UseGuards(AuthGuard)
   @Post()
   async createBoard(
-    @Body() createBoardParam: CreateBaordDto,
+    @Body() createBoardParam: CreateBoardDto,
     @Request() req,
   ): Promise<Board> {
     const { sub } = req.user;
     createBoardParam.userId = sub;
 
     return await this.boardService.createBoard(createBoardParam);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch(':boardId')
+  async updateBoard(
+    @Param('boardId') boardId: string,
+    @Body() updateBoardParam: UpdateBoardDto,
+    @Request() req,
+  ): Promise<Board> {
+    const { sub } = req.user;
+
+    if (updateBoardParam.userId !== sub) {
+      throw new Error('Invalid user');
+    }
+
+    return await this.boardService.updateBoard(boardId, updateBoardParam);
   }
 }
