@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './board.entity';
-import { CreateBaordDto } from './board.dto';
+import { CreateBoardDto, UpdateBoardDto } from './board.dto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { UserRepository } from 'src/user/user.repository';
 import { SwTypeService } from 'src/sw-type/sw-type.service';
@@ -72,8 +72,24 @@ export class BoardService {
 
     return targetBoard;
   }
+  async updateBoard(
+    boardId: string,
+    updateBoardParam: UpdateBoardDto,
+  ): Promise<Board> {
+    const targetBoard = await this.boardRepository.findOne({
+      where: { boardId: boardId },
+    });
+    if (!targetBoard) throw new NotFoundException('Board not found');
 
-  async createBoard(boardParam: CreateBaordDto): Promise<Board> {
+    const updatedContent = await this.changeSwVersionContentToUpload(
+      updateBoardParam.content,
+    );
+    targetBoard.content = updatedContent;
+    targetBoard.title = updateBoardParam.title;
+
+    return await this.boardRepository.save(targetBoard);
+  }
+  async createBoard(boardParam: CreateBoardDto): Promise<Board> {
     try {
       const newBoard = new Board(boardParam);
       const author = await this.userRepository.findOneByUUID(boardParam.userId);
