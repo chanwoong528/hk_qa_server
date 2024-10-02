@@ -233,4 +233,7 @@ export class CommentService {
       updateCommentDto,
     );
   }
+  async deleteComment(commentId: string): Promise<any> {
+    return await this.commentRepository.delete(commentId);
+  }
 }

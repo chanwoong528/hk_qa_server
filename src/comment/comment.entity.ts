@@ -33,11 +33,13 @@ export class Comment {
 
   @ManyToOne((type) => Comment, (comment) => comment.childComments, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   parentComment?: Comment;
 
   @OneToMany((type) => Comment, (comment) => comment.parentComment, {
     cascade: true,
+    onDelete: 'CASCADE',
   })
   childComments?: Comment[];
 
@@ -60,11 +62,11 @@ export class Comment {
   })
   board?: Board;
 
-  @OneToMany(
-    (type) => Reaction,
-    (reaction) => reaction.parentComment,
-    // { cascade: ["remove"] }
-  )
+  @OneToMany((type) => Reaction, (reaction) => reaction.parentComment, {
+    onDelete: 'CASCADE',
+    // eager: true,
+    // cascade: true,
+  })
   @JoinTable()
   reactions: Reaction[];
 }
