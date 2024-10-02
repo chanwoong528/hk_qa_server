@@ -4,7 +4,7 @@ import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as jsdom from 'jsdom';
 
-import { CreateCommentDto } from './comment.dto';
+import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
 import { Comment } from './comment.entity';
 
 import { UserService } from 'src/user/user.service';
@@ -225,5 +225,15 @@ export class CommentService {
       },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async patchCommentContent(updateCommentDto: UpdateCommentDto): Promise<any> {
+    return await this.commentRepository.update(
+      updateCommentDto.commentId,
+      updateCommentDto,
+    );
+  }
+  async deleteComment(commentId: string): Promise<any> {
+    return await this.commentRepository.delete(commentId);
   }
 }
