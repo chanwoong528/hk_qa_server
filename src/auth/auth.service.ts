@@ -63,7 +63,11 @@ export class AuthService {
     }
   }
   extractTokenFromHeader(headerAuth: string): string | undefined {
-    const [type, token] = headerAuth.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    try {
+      const [type, token] = headerAuth.split(' ') ?? [];
+      return type === 'Bearer' ? token : undefined;
+    } catch (error) {
+      return undefined;
+    }
   }
 }
