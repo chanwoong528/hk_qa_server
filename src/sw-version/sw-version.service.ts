@@ -101,7 +101,11 @@ export class SwVersionService {
       const updatedHtmlContent = await this.changeSwVersionContentToUpload(
         swVersion.versionDesc,
       );
-      swVersion.versionDesc = updatedHtmlContent;
+
+      targetSwVersion.versionDesc = updatedHtmlContent;
+      Object.assign(targetSwVersion, swVersion);
+
+      console.log('swVersion', targetSwVersion, id);
 
       return await this.swVersionRepository.update(id, swVersion);
     } catch (error) {
