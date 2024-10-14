@@ -105,8 +105,6 @@ export class SwVersionService {
       targetSwVersion.versionDesc = updatedHtmlContent;
       Object.assign(targetSwVersion, swVersion);
 
-      console.log('swVersion', targetSwVersion, id);
-
       return await this.swVersionRepository.update(id, swVersion);
     } catch (error) {
       if (error instanceof QueryFailedError) {
