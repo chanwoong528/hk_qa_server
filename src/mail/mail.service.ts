@@ -161,7 +161,7 @@ export class MailService {
         {
           contentType:
             this.configService.get<string>('HOMEPAGE_URL') +
-            `/sw-type/${swInfo.swType.swTypeId}`,
+            `/sw-type/${swInfo.swType.swTypeId}?open=${swInfo.swVersionId}`,
           content: {
             $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
             type: 'AdaptiveCard',
@@ -208,7 +208,7 @@ export class MailService {
           {
             contentType:
               this.configService.get<string>('HOMEPAGE_URL') +
-              `/sw-type/${swInfo.swType.swTypeId}`,
+              `/sw-type/${swInfo.swType.swTypeId}?open=${swInfo.swVersionId}`,
             content: {
               $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
               type: 'AdaptiveCard',

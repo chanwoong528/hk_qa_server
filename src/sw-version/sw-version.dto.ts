@@ -6,7 +6,6 @@ export class CreateSwVersionDto {
   tag: string;
 }
 
-
 export class UpdateSwVersionDto {
   versionTitle?: string;
   versionDesc?: string;
