@@ -77,6 +77,9 @@ import { BoardModule } from './board/board.module';
         autoLoadEntities: true,
         synchronize: true,
         logging: configService.get('NODE_ENV') === 'prod' ? false : false,
+        extra: {
+          options: '-c timezone=Asia/Seoul', // 이 부분에서 타임존 설정
+        },
         ssl:
           configService.get('NODE_ENV') === 'prod'
             ? {
