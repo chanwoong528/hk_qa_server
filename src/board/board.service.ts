@@ -51,6 +51,7 @@ export class BoardService {
           swTypeId: swTypeId,
         },
       },
+      order: { createdAt: 'DESC' },
       skip: (page - 1) * take,
       take: take,
     });
