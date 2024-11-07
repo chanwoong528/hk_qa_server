@@ -19,12 +19,14 @@ import { UpdateResult } from 'typeorm';
 
 @Controller('sw-type')
 export class SwTypeController {
-  constructor(private readonly swTypeService: SwTypeService) { }
+  constructor(private readonly swTypeService: SwTypeService) {}
 
   @Get()
   @UseGuards(AuthGuard)
-  async getSwTypes(): Promise<SwType[]> {
-    return await this.swTypeService.getSwTypes();
+  async getSwTypes(@Request() req): Promise<SwType[]> {
+    const { sub } = req.user;
+
+    return await this.swTypeService.getSwTypes(sub);
   }
 
   @Post()
@@ -38,16 +40,13 @@ export class SwTypeController {
     return await this.swTypeService.createSwType(swType, sub);
   }
 
-  @Patch(":id")
+  @Patch(':id')
   @Roles(E_Role.master)
   @UseGuards(AuthGuard)
   async updateSwType(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() swType: UpdateSwTypeDto
+    @Body() swType: UpdateSwTypeDto,
   ): Promise<UpdateResult> {
-
     return await this.swTypeService.updateSwTypeById(id, swType);
   }
 }
-
-

@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
+import { SwMaintainer } from 'src/sw-maintainer/sw-maintainer.entity';
 
 @Entity({ name: 'swType', schema: 'public', synchronize: true })
 export class SwType {
@@ -35,7 +36,6 @@ export class SwType {
   @UpdateDateColumn()
   updatedAt: Date;
 
-
   @ManyToOne((type) => User, (user) => user)
   user: User;
 
@@ -43,5 +43,7 @@ export class SwType {
   @JoinColumn()
   swVersions: SwVersion[];
 
-
+  @OneToMany((type) => SwMaintainer, (swMaintainer) => swMaintainer.swType)
+  @JoinColumn()
+  swMaintainers: SwMaintainer[];
 }

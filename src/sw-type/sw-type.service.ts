@@ -4,6 +4,7 @@ import { SwType } from './sw-type.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateSwTypeDto, UpdateSwTypeDto } from './sw-type.dto';
 import { UserRepository } from 'src/user/user.repository';
+import { E_Role } from 'src/enum';
 
 @Injectable()
 export class SwTypeService {
@@ -26,7 +27,22 @@ export class SwTypeService {
   }
 
   //GET_ALL
-  async getSwTypes(): Promise<SwType[]> {
+  async getSwTypes(userId?: string): Promise<SwType[]> {
+    const loggedInUser = await this.userRepository.findOneByUUID(userId);
+
+    if (loggedInUser.role === E_Role.tester) {
+      const temp = await this.swTypeRepository.find({
+        relations: [
+          'user',
+          'swVersions',
+          'swVersions.testSessions',
+          'swMaintainers',
+        ],
+        where: { showStatus: 'Y', swMaintainers: { user: { id: userId } } },
+      });
+      return temp;
+    }
+
     return await this.swTypeRepository.find({
       relations: ['user', 'swVersions', 'swVersions.testSessions'],
       where: { showStatus: 'Y' },
