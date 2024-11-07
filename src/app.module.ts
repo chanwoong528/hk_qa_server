@@ -32,6 +32,8 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 // import { EventsModule } from './events/events.module';//socket
 import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
 import { BoardModule } from './board/board.module';
+import { JenkinsModule } from './jenkins/jenkins.module';
+import { JenkinsDeploymentModule } from './jenkins-deployment/jenkins-deployment.module';
 
 @Global()
 @Module({
@@ -104,6 +106,8 @@ import { BoardModule } from './board/board.module';
     SseModule,
     SwMaintainerModule,
     BoardModule,
+    JenkinsModule,
+    JenkinsDeploymentModule,
     // EventsModule, //for socket
   ],
   controllers: [AppController],
