@@ -4,6 +4,7 @@ import { DeployLog } from './deploy-log.entity';
 import { Repository } from 'typeorm';
 import { JenkinsDeploymentService } from 'src/jenkins-deployment/jenkins-deployment.service';
 import { UserService } from 'src/user/user.service';
+import axios from 'axios';
 
 @Injectable()
 export class DeployLogService {
@@ -29,7 +30,11 @@ export class DeployLogService {
       throw new NotFoundException('Jenkins Deployment not found');
 
     const deployLog = new DeployLog();
-    deployLog.jenkinsDeployment = jenkinsDeployment;
+
+    axios.post(jenkinsDeployment.jenkinsUrl).then(() => {
+      deployLog.jenkinsDeployment = jenkinsDeployment;
+      deployLog.user = user;
+    });
 
     return await this.deployLogRepository.save(deployLog);
   }
