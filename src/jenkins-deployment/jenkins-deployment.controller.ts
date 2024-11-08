@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Param,
   Patch,
   Post,
@@ -36,5 +37,11 @@ export class JenkinsDeploymentController {
       id,
       jenkinsDeploymentDto,
     );
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  async deleteJenkinsDeployment(@Param('id') id: string): Promise<any> {
+    return await this.jenkinsDeploymentService.deleteJenkinsDeployment(id);
   }
 }

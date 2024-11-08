@@ -3,6 +3,7 @@ import { JenkinsDeployment } from './jenkins-deployment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SwTypeService } from 'src/sw-type/sw-type.service';
+import { UpdateJenkinsDeploymentDto } from './jenkins-deployment.dto';
 
 @Injectable()
 export class JenkinsDeploymentService {
@@ -11,6 +12,15 @@ export class JenkinsDeploymentService {
     private readonly jenkinsDeploymentRepository: Repository<JenkinsDeployment>,
     private readonly swTypeService: SwTypeService,
   ) {}
+
+  async getJenkinsDeploymentById(id: string): Promise<JenkinsDeployment> {
+    return await this.jenkinsDeploymentRepository.findOne({
+      relations: ['swType'],
+      where: {
+        jenkinsDeploymentId: id,
+      },
+    });
+  }
 
   async createJenkinsDeployment(
     jenkinsDeploymentDto: Partial<JenkinsDeployment & { swTypeId: string }>,
@@ -30,11 +40,14 @@ export class JenkinsDeploymentService {
 
   async updateJenkinsDeployment(
     id: string,
-    jenkinsDeploymentDto: Partial<JenkinsDeployment>,
+    jenkinsDeploymentDto: Partial<UpdateJenkinsDeploymentDto>,
   ): Promise<any> {
     const targetJenkinsDeployment =
-      await this.jenkinsDeploymentRepository.findOneBy({
-        jenkinsDeploymentId: id,
+      await this.jenkinsDeploymentRepository.findOne({
+        relations: ['swType'],
+        where: {
+          jenkinsDeploymentId: id,
+        },
       });
 
     if (!targetJenkinsDeployment) {
@@ -47,9 +60,12 @@ export class JenkinsDeploymentService {
 
     Object.assign(updatedTargetJenkinsDeployment, jenkinsDeploymentDto);
 
-    return await this.jenkinsDeploymentRepository.update(
-      id,
+    return await this.jenkinsDeploymentRepository.save(
       updatedTargetJenkinsDeployment,
     );
+  }
+
+  async deleteJenkinsDeployment(id: string): Promise<any> {
+    return await this.jenkinsDeploymentRepository.delete(id);
   }
 }
