@@ -45,3 +45,39 @@ export enum E_ReactionType {
   sad = 'sad',
   wow = 'wow',
 }
+
+export enum E_DeployStatus {
+  pending = 'pending', //-> jenkins post sent, but not yet finished
+  /**
+   * "building": true,
+   * "inProgress": true,
+   * "result": null,
+   */
+
+  success = 'success',
+  /**
+   * "building": false,
+   * "inProgress": false,
+   * "result": "SUCCESS"
+   */
+  failed = 'failed',
+  /**
+   * "building": false,
+   * "inProgress": false,
+   * "result": "FAILURE"
+   */
+  aborted = 'aborted',
+  /**
+   * "building": false,
+   * "inProgress": false,
+   * "result": "ABORTED"
+   */
+}
+
+export enum E_JenkinsUrlType {
+  POST_build = '/build',
+  POST_buildWithParam = '/buildWithParam',
+  GET_lastBuild = '/lastBuild/api/json',
+  GET_buildList = '/api/json',
+  GET_nextBuildNumber = '/api/json?tree=nextBuildNumber',
+}

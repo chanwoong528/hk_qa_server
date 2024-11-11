@@ -5,6 +5,11 @@ import { Repository } from 'typeorm';
 import { JenkinsDeploymentService } from 'src/jenkins-deployment/jenkins-deployment.service';
 import { UserService } from 'src/user/user.service';
 import axios from 'axios';
+import { E_DeployStatus, E_JenkinsUrlType } from 'src/enum';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
+import { SseService } from 'src/sse/sse.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DeployLogService {
@@ -15,7 +20,80 @@ export class DeployLogService {
     private deployLogRepository: Repository<DeployLog>,
     private jenkinsDeploymentService: JenkinsDeploymentService,
     private userService: UserService,
+    private schedulerRegistry: SchedulerRegistry,
+    private sseService: SseService,
+    private configService: ConfigService,
   ) {}
+  addCronJob(buildNumber: number, jenkinsUrl: string) {
+    const name = `deploy-log-job-${jenkinsUrl}-${buildNumber}`;
+
+    const job = new CronJob('*/10 * * * * *', async () => {
+      const fetchBuildInfo = await axios
+        .get(`${jenkinsUrl}/${buildNumber}${E_JenkinsUrlType.GET_buildList}`, {
+          auth: {
+            username: this.configService.get('JENKINS_USERNAME'),
+            password: this.configService.get('JENKINS_API_TOKEN'),
+          },
+        })
+        .then((res) => {
+          const buildInfo = res.data;
+          // console.log(
+          //   'buildInfo',
+          //   buildInfo.number,
+          //   buildInfo.result,
+          //   buildInfo.building,
+          //   buildInfo.inProgress,
+          // );
+          if (
+            buildInfo.building === false &&
+            buildInfo.inProgress === false &&
+            !!buildInfo.result
+          ) {
+            switch (buildInfo.result) {
+              case 'SUCCESS':
+                // console.log('build success');
+                this.updateDeployLogStatus(
+                  buildNumber,
+                  jenkinsUrl,
+                  E_DeployStatus.success,
+                );
+                break;
+
+              case 'FAILURE':
+                // console.log('build failed');
+                this.updateDeployLogStatus(
+                  buildNumber,
+                  jenkinsUrl,
+                  E_DeployStatus.failed,
+                );
+                break;
+
+              case 'ABORTED':
+                // console.log('build aborted');
+                this.updateDeployLogStatus(
+                  buildNumber,
+                  jenkinsUrl,
+                  E_DeployStatus.aborted,
+                );
+                break;
+            }
+
+            this.schedulerRegistry.getCronJob(name).stop();
+            // this.sseService.emitJenkinsStatusEvent(jenkinsUrl);
+          }
+        })
+        .catch((err) => {
+          console.log('err', err.response.status);
+          if (err.response.status === 404) {
+            console.warn('not found job');
+          } else {
+            this.schedulerRegistry.getCronJob(name).stop();
+          }
+        });
+      console.log('job end');
+    });
+    this.schedulerRegistry.addCronJob(name, job);
+  }
 
   async createDeployLog(jenkinsDeployId: string, userId: string): Promise<any> {
     const user = await this.userService.findOneById(userId);
@@ -29,13 +107,74 @@ export class DeployLogService {
     if (!jenkinsDeployment)
       throw new NotFoundException('Jenkins Deployment not found');
 
+    const fetchNextBuild = await axios.get(
+      jenkinsDeployment.jenkinsUrl + E_JenkinsUrlType.GET_nextBuildNumber,
+      {
+        auth: {
+          username: this.configService.get('JENKINS_USERNAME'),
+          password: this.configService.get('JENKINS_API_TOKEN'),
+        },
+      },
+    );
+
+    const newBuildNumber = (await fetchNextBuild.data.nextBuildNumber) || 1;
+
     const deployLog = new DeployLog();
+    deployLog.buildNumber = newBuildNumber;
+    deployLog.jenkinsDeployment = jenkinsDeployment;
+    deployLog.user = user;
 
-    axios.post(jenkinsDeployment.jenkinsUrl).then(() => {
-      deployLog.jenkinsDeployment = jenkinsDeployment;
-      deployLog.user = user;
+    const fetchPostNewBuild = await axios.post(
+      jenkinsDeployment.jenkinsUrl + E_JenkinsUrlType.POST_build,
+      {},
+      {
+        headers: {
+          'Jenkins-Crumb': this.configService.get('JENKINS_CRUMB'),
+        },
+        auth: {
+          username: this.configService.get('JENKINS_USERNAME'),
+          password: this.configService.get('JENKINS_API_TOKEN'),
+        },
+      },
+    );
+
+    const newSavedDeployLog = await this.deployLogRepository.save(deployLog);
+
+    if (fetchPostNewBuild.status < 300) {
+      this.addCronJob(newBuildNumber, jenkinsDeployment.jenkinsUrl);
+      const name = `deploy-log-job-${jenkinsDeployment.jenkinsUrl}-${newBuildNumber}`;
+      this.schedulerRegistry.getCronJob(name).start();
+    }
+
+    return newSavedDeployLog;
+  }
+
+  async updateDeployLogStatus(
+    buildNumber: number,
+    jenkinsUrl: string,
+    status: E_DeployStatus,
+  ) {
+    const targetDeployLog = await this.deployLogRepository.findOne({
+      where: {
+        buildNumber: buildNumber,
+        jenkinsDeployment: {
+          jenkinsUrl: jenkinsUrl,
+        },
+      },
+      relations: {
+        jenkinsDeployment: {
+          swType: true, // swType 관계도 포함
+        },
+      },
     });
+    console.log('targetDeployLog>> ', targetDeployLog);
 
-    return await this.deployLogRepository.save(deployLog);
+    if (!targetDeployLog) throw new NotFoundException('Deploy log not found');
+
+    targetDeployLog.status = status;
+    this.sseService.emitJenkinsStatusEvent(
+      targetDeployLog.jenkinsDeployment.swType.swTypeId,
+    );
+    return await this.deployLogRepository.save(targetDeployLog);
   }
 }

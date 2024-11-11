@@ -22,6 +22,17 @@ export class JenkinsDeploymentService {
     });
   }
 
+  async getJenkinsDeploymentBySwTypeId(
+    swTypeId: string,
+  ): Promise<JenkinsDeployment[]> {
+    return await this.jenkinsDeploymentRepository.find({
+      relations: ['swType', 'deployLogs'],
+      where: {
+        swType: { swTypeId },
+      },
+    });
+  }
+
   async createJenkinsDeployment(
     jenkinsDeploymentDto: Partial<JenkinsDeployment & { swTypeId: string }>,
   ): Promise<any> {

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Patch,
   Post,
@@ -43,5 +44,15 @@ export class JenkinsDeploymentController {
   @UseGuards(AuthGuard)
   async deleteJenkinsDeployment(@Param('id') id: string): Promise<any> {
     return await this.jenkinsDeploymentService.deleteJenkinsDeployment(id);
+  }
+
+  @Get(':swTypeId')
+  @UseGuards(AuthGuard)
+  async getJenkinsDeployment(
+    @Param('swTypeId') swTypeId: string,
+  ): Promise<any> {
+    return await this.jenkinsDeploymentService.getJenkinsDeploymentBySwTypeId(
+      swTypeId,
+    );
   }
 }

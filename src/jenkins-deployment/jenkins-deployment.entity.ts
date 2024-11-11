@@ -1,9 +1,11 @@
+import { DeployLog } from 'src/deploy-log/deploy-log.entity';
 import { SwType } from 'src/sw-type/sw-type.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -30,4 +32,8 @@ export class JenkinsDeployment {
   @ManyToOne(() => SwType, (swType) => swType)
   @JoinColumn()
   swType: SwType;
+
+  @OneToMany(() => DeployLog, (deployLog) => deployLog.jenkinsDeployment)
+  @JoinColumn()
+  deployLogs: DeployLog[];
 }
