@@ -48,13 +48,16 @@
     "class-validator": "^0.14.1",
     "cross-env": "^7.0.3",
     "jsdom": "^24.1.1",
+    "nest-winston": "^1.9.7",
     "nodemailer": "^6.9.14",
     "pg": "^8.11.5",
     "react-email": "2.1.6",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.4",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

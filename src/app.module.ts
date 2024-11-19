@@ -1,4 +1,10 @@
-import { Global, Logger, Module } from '@nestjs/common';
+import {
+  Global,
+  Logger,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -32,6 +38,7 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 // import { EventsModule } from './events/events.module';//socket
 import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
 import { BoardModule } from './board/board.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 import { JenkinsDeploymentModule } from './jenkins-deployment/jenkins-deployment.module';
 import { DeployLogModule } from './deploy-log/deploy-log.module';
@@ -123,4 +130,8 @@ import { DeployLogModule } from './deploy-log/deploy-log.module';
   ],
   exports: [BullModule],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
