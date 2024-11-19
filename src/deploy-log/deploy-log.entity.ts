@@ -20,6 +20,9 @@ export class DeployLog {
   @Column()
   buildNumber: number;
 
+  @Column()
+  tag: string;
+
   @Column({
     default: E_DeployStatus.pending,
     type: 'enum',

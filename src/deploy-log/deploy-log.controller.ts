@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, Body } from '@nestjs/common';
 import { DeployLogService } from './deploy-log.service';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { RolesGuard } from 'src/common/guard/role.guard';
@@ -10,9 +10,18 @@ export class DeployLogController {
 
   @Post()
   @UseGuards(AuthGuard)
-  async createDeployLog(jenkinsDeployId: string, @Request() req): Promise<any> {
+  async createDeployLog(
+    @Request() req,
+    @Body() deployLogParam: { tag: string; jenkinsDeployId: string },
+  ): Promise<any> {
     const { sub } = req.user;
 
-    return await this.deployLogService.createDeployLog(jenkinsDeployId, sub);
+    const { tag, jenkinsDeployId } = deployLogParam;
+
+    return await this.deployLogService.createDeployLog(
+      { jenkinsDeployId, tag },
+      sub,
+    );
+    return;
   }
 }

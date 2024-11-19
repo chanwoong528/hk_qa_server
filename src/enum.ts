@@ -76,7 +76,7 @@ export enum E_DeployStatus {
 
 export enum E_JenkinsUrlType {
   POST_build = '/build',
-  POST_buildWithParam = '/buildWithParam',
+  POST_buildWithParam = '/buildWithParameters',
   GET_lastBuild = '/lastBuild/api/json',
   GET_buildList = '/api/json',
   GET_nextBuildNumber = '/api/json?tree=nextBuildNumber',

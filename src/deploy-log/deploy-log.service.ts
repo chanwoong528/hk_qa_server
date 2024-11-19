@@ -37,13 +37,7 @@ export class DeployLogService {
         })
         .then((res) => {
           const buildInfo = res.data;
-          // console.log(
-          //   'buildInfo',
-          //   buildInfo.number,
-          //   buildInfo.result,
-          //   buildInfo.building,
-          //   buildInfo.inProgress,
-          // );
+
           if (
             buildInfo.building === false &&
             buildInfo.inProgress === false &&
@@ -51,7 +45,6 @@ export class DeployLogService {
           ) {
             switch (buildInfo.result) {
               case 'SUCCESS':
-                // console.log('build success');
                 this.updateDeployLogStatus(
                   buildNumber,
                   jenkinsUrl,
@@ -60,7 +53,6 @@ export class DeployLogService {
                 break;
 
               case 'FAILURE':
-                // console.log('build failed');
                 this.updateDeployLogStatus(
                   buildNumber,
                   jenkinsUrl,
@@ -69,7 +61,6 @@ export class DeployLogService {
                 break;
 
               case 'ABORTED':
-                // console.log('build aborted');
                 this.updateDeployLogStatus(
                   buildNumber,
                   jenkinsUrl,
@@ -77,31 +68,43 @@ export class DeployLogService {
                 );
                 break;
             }
-
             this.schedulerRegistry.getCronJob(name).stop();
-            // this.sseService.emitJenkinsStatusEvent(jenkinsUrl);
           }
         })
         .catch((err) => {
-          console.log('err', err.response.status);
+          console.error('err', err.response.status);
           if (err.response.status === 404) {
-            console.warn('not found job');
           } else {
             this.schedulerRegistry.getCronJob(name).stop();
           }
         });
-      console.log('job end');
     });
     this.schedulerRegistry.addCronJob(name, job);
   }
 
-  async createDeployLog(jenkinsDeployId: string, userId: string): Promise<any> {
+  async getDeployLogByTag(tag: string): Promise<DeployLog> {
+    return await this.deployLogRepository.findOne({
+      where: {
+        tag: tag,
+      },
+    });
+  }
+
+  async createDeployLog(
+    param: {
+      jenkinsDeployId: string;
+      tag: string;
+    },
+
+    userId: string,
+  ): Promise<any> {
+    console.log('param>> ', param);
     const user = await this.userService.findOneById(userId);
     if (!user) throw new NotFoundException('User not found');
 
     const jenkinsDeployment =
       await this.jenkinsDeploymentService.getJenkinsDeploymentById(
-        jenkinsDeployId,
+        param.jenkinsDeployId,
       );
 
     if (!jenkinsDeployment)
@@ -119,13 +122,16 @@ export class DeployLogService {
 
     const newBuildNumber = (await fetchNextBuild.data.nextBuildNumber) || 1;
 
+    const existDeployLogThroughTag = await this.getDeployLogByTag(param.tag);
+
     const deployLog = new DeployLog();
     deployLog.buildNumber = newBuildNumber;
     deployLog.jenkinsDeployment = jenkinsDeployment;
     deployLog.user = user;
+    deployLog.tag = param.tag;
 
     const fetchPostNewBuild = await axios.post(
-      jenkinsDeployment.jenkinsUrl + E_JenkinsUrlType.POST_build,
+      jenkinsDeployment.jenkinsUrl + E_JenkinsUrlType.POST_buildWithParam,
       {},
       {
         headers: {
@@ -135,8 +141,16 @@ export class DeployLogService {
           username: this.configService.get('JENKINS_USERNAME'),
           password: this.configService.get('JENKINS_API_TOKEN'),
         },
+        params: {
+          TAG: param.tag,
+          force: !!existDeployLogThroughTag ? false : true,
+        },
       },
     );
+    console.log(fetchNextBuild.data);
+    // .catch((err) => {
+    //   console.log('@@@@', err);
+    // });
 
     const newSavedDeployLog = await this.deployLogRepository.save(deployLog);
 
