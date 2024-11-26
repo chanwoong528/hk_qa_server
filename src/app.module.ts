@@ -40,6 +40,9 @@ import { SwMaintainerModule } from './sw-maintainer/sw-maintainer.module';
 import { BoardModule } from './board/board.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
+import { JenkinsDeploymentModule } from './jenkins-deployment/jenkins-deployment.module';
+import { DeployLogModule } from './deploy-log/deploy-log.module';
+
 @Global()
 @Module({
   imports: [
@@ -111,6 +114,8 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     SseModule,
     SwMaintainerModule,
     BoardModule,
+    JenkinsDeploymentModule,
+    DeployLogModule,
     // EventsModule, //for socket
   ],
   controllers: [AppController],

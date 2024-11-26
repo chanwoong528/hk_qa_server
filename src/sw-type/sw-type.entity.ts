@@ -11,6 +11,7 @@ import {
 import { User } from 'src/user/user.entity';
 import { SwVersion } from 'src/sw-version/sw-version.entity';
 import { SwMaintainer } from 'src/sw-maintainer/sw-maintainer.entity';
+import { JenkinsDeployment } from 'src/jenkins-deployment/jenkins-deployment.entity';
 
 @Entity({ name: 'swType', schema: 'public', synchronize: true })
 export class SwType {
@@ -46,4 +47,11 @@ export class SwType {
   @OneToMany((type) => SwMaintainer, (swMaintainer) => swMaintainer.swType)
   @JoinColumn()
   swMaintainers: SwMaintainer[];
+
+  @OneToMany(
+    (type) => JenkinsDeployment,
+    (jenkinsDeployment) => jenkinsDeployment.swType,
+  )
+  @JoinColumn()
+  jenkinsDeployments: JenkinsDeployment[];
 }

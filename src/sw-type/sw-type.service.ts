@@ -31,7 +31,7 @@ export class SwTypeService {
     const loggedInUser = await this.userRepository.findOneByUUID(userId);
 
     if (loggedInUser.role === E_Role.tester) {
-      const temp = await this.swTypeRepository.find({
+      return await this.swTypeRepository.find({
         relations: [
           'user',
           'swVersions',
@@ -40,11 +40,15 @@ export class SwTypeService {
         ],
         where: { showStatus: 'Y', swMaintainers: { user: { id: userId } } },
       });
-      return temp;
     }
 
     return await this.swTypeRepository.find({
-      relations: ['user', 'swVersions', 'swVersions.testSessions'],
+      relations: [
+        'user',
+        'swVersions',
+        'swVersions.testSessions',
+        'jenkinsDeployments',
+      ],
       where: { showStatus: 'Y' },
       order: {
         createdAt: 'DESC',
