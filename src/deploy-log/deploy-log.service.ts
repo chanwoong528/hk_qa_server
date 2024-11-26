@@ -92,19 +92,21 @@ export class DeployLogService {
 
   async createDeployLog(
     param: {
-      jenkinsDeployId: string;
+      jenkinsDeploymentId: string;
       tag: string;
+      reason: string;
     },
 
     userId: string,
   ): Promise<any> {
-    console.log('param>> ', param);
     const user = await this.userService.findOneById(userId);
     if (!user) throw new NotFoundException('User not found');
 
+    console.log('>>>> ', param.jenkinsDeploymentId);
+
     const jenkinsDeployment =
       await this.jenkinsDeploymentService.getJenkinsDeploymentById(
-        param.jenkinsDeployId,
+        param.jenkinsDeploymentId,
       );
 
     if (!jenkinsDeployment)
@@ -129,6 +131,9 @@ export class DeployLogService {
     deployLog.jenkinsDeployment = jenkinsDeployment;
     deployLog.user = user;
     deployLog.tag = param.tag;
+    deployLog.reason = param.reason;
+
+    console.log(jenkinsDeployment.jenkinsUrl);
 
     const fetchPostNewBuild = await axios.post(
       jenkinsDeployment.jenkinsUrl + E_JenkinsUrlType.POST_buildWithParam,

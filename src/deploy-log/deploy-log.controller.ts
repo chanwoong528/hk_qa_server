@@ -12,14 +12,19 @@ export class DeployLogController {
   @UseGuards(AuthGuard)
   async createDeployLog(
     @Request() req,
-    @Body() deployLogParam: { tag: string; jenkinsDeployId: string },
+    @Body()
+    deployLogParam: {
+      tag: string;
+      jenkinsDeploymentId: string;
+      reason: string;
+    },
   ): Promise<any> {
     const { sub } = req.user;
 
-    const { tag, jenkinsDeployId } = deployLogParam;
+    const { tag, jenkinsDeploymentId, reason } = deployLogParam;
 
     return await this.deployLogService.createDeployLog(
-      { jenkinsDeployId, tag },
+      { jenkinsDeploymentId, tag, reason },
       sub,
     );
     return;

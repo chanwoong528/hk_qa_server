@@ -14,12 +14,18 @@ export class JenkinsDeploymentService {
   ) {}
 
   async getJenkinsDeploymentById(id: string): Promise<JenkinsDeployment> {
-    return await this.jenkinsDeploymentRepository.findOne({
+    if (!id) {
+      throw new NotFoundException('Jenkins Deployment not found');
+    }
+
+    const target = await this.jenkinsDeploymentRepository.findOne({
       relations: ['swType'],
       where: {
         jenkinsDeploymentId: id,
       },
     });
+
+    return target;
   }
 
   async getJenkinsDeploymentBySwTypeId(
@@ -29,6 +35,11 @@ export class JenkinsDeploymentService {
       relations: ['swType', 'deployLogs'],
       where: {
         swType: { swTypeId },
+      },
+      order: {
+        deployLogs: {
+          createdAt: 'DESC',
+        },
       },
     });
   }

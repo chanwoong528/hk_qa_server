@@ -30,6 +30,9 @@ export class DeployLog {
   })
   status: E_DeployStatus;
 
+  @Column()
+  reason: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
