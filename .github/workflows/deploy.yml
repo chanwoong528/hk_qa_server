@@ -56,6 +56,10 @@ jobs:
           echo AWS_ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} >> env/prod.env
           echo AWS_SECRET_KEY=${{secrets.AWS_SECRET_KEY}} >> env/prod.env
           echo TEAMS_WEBHOOK_URL=${{secrets.TEAMS_WEBHOOK_URL}} >> env/prod.env
+          echo JENKINS_API_TOKEN=${{secrets.JENKINS_API_TOKEN}} >> env/prod.env
+          echo JENKINS_USERNAME=${{secrets.JENKINS_USERNAME}} >> env/prod.env
+          echo JENKINS_CRUMB=${{secrets.JENKINS_CRUMB}} >> env/prod.env
+
           cat env/prod.env
 
       - name: build server files
