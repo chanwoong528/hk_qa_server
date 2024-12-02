@@ -59,6 +59,10 @@ jobs:
           echo JENKINS_API_TOKEN=${{secrets.JENKINS_API_TOKEN}} >> env/prod.env
           echo JENKINS_USERNAME=${{secrets.JENKINS_USERNAME}} >> env/prod.env
           echo JENKINS_CRUMB=${{secrets.JENKINS_CRUMB}} >> env/prod.env
+          echo JENKINS_API_TOKEN_HERB=${{secrets.JENKINS_API_TOKEN_HERB}} >> env/prod.env
+          echo JENKINS_USERNAME_HERB=${{secrets.JENKINS_USERNAME_HERB}} >> env/prod.env
+          echo JENKINS_CRUMB_HERB=${{secrets.JENKINS_CRUMB_HERB}} >> env/prod.env
+
 
           cat env/prod.env
 
