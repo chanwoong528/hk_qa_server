@@ -14,7 +14,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class DeployLogService {
   // ex jenkins POST url https://home-jenkins.hankookilbo.com/view/10.FRONT%20END%20ITEMS/job/hk-homepage-front-dev-all/build
-
+  // ex jenkins POST URL https://herb-jenkins.hankookilbo.com/view/1.%20DEV_BUILD_DEPLOY/job/dev-vms-CLIENT/api/json?tree=nextBuildNumber
   constructor(
     @InjectRepository(DeployLog)
     private deployLogRepository: Repository<DeployLog>,
@@ -24,16 +24,30 @@ export class DeployLogService {
     private sseService: SseService,
     private configService: ConfigService,
   ) {}
+
+  private getJenkinsCredentials(jenkinsUrl: string) {
+    return {
+      credentialInfo: {
+        username: jenkinsUrl.includes('https://home-jenkins.hankookilbo.com')
+          ? this.configService.get('JENKINS_USERNAME')
+          : this.configService.get('JENKINS_USERNAME_HERB'),
+        password: jenkinsUrl.includes('https://home-jenkins.hankookilbo.com')
+          ? this.configService.get('JENKINS_API_TOKEN')
+          : this.configService.get('JENKINS_API_TOKEN_HERB'),
+      },
+      jenkinsCrumb: jenkinsUrl.includes('https://home-jenkins.hankookilbo.com')
+        ? this.configService.get('JENKINS_CRUMB')
+        : this.configService.get('JENKINS_CRUMB_HERB'),
+    };
+  }
+
   addCronJob(buildNumber: number, jenkinsUrl: string) {
     const name = `deploy-log-job-${jenkinsUrl}-${buildNumber}`;
 
     const job = new CronJob('*/10 * * * * *', async () => {
       const fetchBuildInfo = await axios
         .get(`${jenkinsUrl}/${buildNumber}${E_JenkinsUrlType.GET_buildList}`, {
-          auth: {
-            username: this.configService.get('JENKINS_USERNAME'),
-            password: this.configService.get('JENKINS_API_TOKEN'),
-          },
+          auth: this.getJenkinsCredentials(jenkinsUrl).credentialInfo,
         })
         .then((res) => {
           const buildInfo = res.data;
@@ -112,13 +126,17 @@ export class DeployLogService {
     if (!jenkinsDeployment)
       throw new NotFoundException('Jenkins Deployment not found');
 
+    console.log(
+      'jenkinsDeployment.jenkinsUrl',
+      jenkinsDeployment.jenkinsUrl,
+      this.getJenkinsCredentials(jenkinsDeployment.jenkinsUrl).credentialInfo,
+      this.getJenkinsCredentials(jenkinsDeployment.jenkinsUrl).jenkinsCrumb,
+    );
     const fetchNextBuild = await axios.get(
       jenkinsDeployment.jenkinsUrl + E_JenkinsUrlType.GET_nextBuildNumber,
       {
-        auth: {
-          username: this.configService.get('JENKINS_USERNAME'),
-          password: this.configService.get('JENKINS_API_TOKEN'),
-        },
+        auth: this.getJenkinsCredentials(jenkinsDeployment.jenkinsUrl)
+          .credentialInfo,
       },
     );
 
@@ -130,7 +148,7 @@ export class DeployLogService {
     deployLog.buildNumber = newBuildNumber;
     deployLog.jenkinsDeployment = jenkinsDeployment;
     deployLog.user = user;
-    deployLog.tag = param.tag;
+    deployLog.tag = `${param.tag}-${newBuildNumber}`;
     deployLog.reason = param.reason;
 
     console.log(jenkinsDeployment.jenkinsUrl);
@@ -140,22 +158,18 @@ export class DeployLogService {
       {},
       {
         headers: {
-          'Jenkins-Crumb': this.configService.get('JENKINS_CRUMB'),
+          'Jenkins-Crumb': this.getJenkinsCredentials(
+            jenkinsDeployment.jenkinsUrl,
+          ).jenkinsCrumb,
         },
-        auth: {
-          username: this.configService.get('JENKINS_USERNAME'),
-          password: this.configService.get('JENKINS_API_TOKEN'),
-        },
+        auth: this.getJenkinsCredentials(jenkinsDeployment.jenkinsUrl)
+          .credentialInfo,
         params: {
-          TAG: param.tag,
+          TAG: `${param.tag}-${newBuildNumber}`,
           force: !!existDeployLogThroughTag ? false : true,
         },
       },
     );
-    console.log(fetchNextBuild.data);
-    // .catch((err) => {
-    //   console.log('@@@@', err);
-    // });
 
     const newSavedDeployLog = await this.deployLogRepository.save(deployLog);
 
