@@ -42,6 +42,9 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 import { JenkinsDeploymentModule } from './jenkins-deployment/jenkins-deployment.module';
 import { DeployLogModule } from './deploy-log/deploy-log.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { BatchServiceService } from './batch-service/batch-service.service';
+import { BatchServiceModule } from './batch-service/batch-service.module';
 
 @Global()
 @Module({
@@ -116,6 +119,7 @@ import { DeployLogModule } from './deploy-log/deploy-log.module';
     BoardModule,
     JenkinsDeploymentModule,
     DeployLogModule,
+    BatchServiceModule,
     // EventsModule, //for socket
   ],
   controllers: [AppController],
@@ -127,6 +131,7 @@ import { DeployLogModule } from './deploy-log/deploy-log.module';
     },
     Logger,
     AppConsumer,
+    BatchServiceService,
   ],
   exports: [BullModule],
 })

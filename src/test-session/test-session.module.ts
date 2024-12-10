@@ -15,9 +15,10 @@ import { LogModule } from 'src/log/log.module';
     TypeOrmModule.forFeature([TestSession]),
     JwtModule,
     SwVersionModule,
-    LogModule
+    LogModule,
   ],
   controllers: [TestSessionController],
-  providers: [TestSessionService, UserRepository, MailService, UploadsService]
+  providers: [TestSessionService, UserRepository, MailService, UploadsService],
+  exports: [TestSessionService],
 })
-export class TestSessionModule { }
+export class TestSessionModule {}
