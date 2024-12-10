@@ -53,13 +53,15 @@ export class LoggerMiddleware implements NestMiddleware {
     res.on('finish', () => {
       const { statusCode } = res;
 
-      const level = ['error', 'warn', 'info'][
-        this.convertLoggerStatusCode(statusCode)
-      ];
-      this.logger.log(
-        level,
-        `${method} ${originalUrl} ${statusCode} - ${userAgent} ${ip}`,
-      );
+      if (method !== 'GET') {
+        const level = ['error', 'warn', 'info'][
+          this.convertLoggerStatusCode(statusCode)
+        ];
+        this.logger.log(
+          level,
+          `${method} ${originalUrl} ${statusCode} - ${userAgent} ${ip}`,
+        );
+      }
     });
 
     next();

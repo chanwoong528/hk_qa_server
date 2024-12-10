@@ -10,8 +10,8 @@ export class BatchServiceService {
     private readonly mailService: MailService,
   ) {}
 
-  @Cron(CronExpression.MONDAY_TO_FRIDAY_AT_11AM, { name: 'pendingTestSession' })
-  async handleCron() {
+  @Cron(CronExpression.MONDAY_TO_FRIDAY_AT_10AM, { name: 'pendingTestSession' })
+  async SendEmailTopendingTestSession() {
     const testSessions =
       await this.testSessionService.getAllTestSessionsPending();
 
