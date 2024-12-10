@@ -111,6 +111,14 @@ export class DeployLogService {
     });
   }
 
+  async getAllDeployLogsPending(): Promise<DeployLog[]> {
+    return await this.deployLogRepository.find({
+      where: {
+        status: E_DeployStatus.pending,
+      },
+    });
+  }
+
   async createDeployLog(
     param: {
       jenkinsDeploymentId: string;
