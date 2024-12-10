@@ -72,6 +72,12 @@ export enum E_DeployStatus {
    * "inProgress": false,
    * "result": "ABORTED"
    */
+  unstable = 'unstable',
+  /**
+   * "building": false,
+   * "inProgress": false,
+   * "result": "UNSTABLE"
+   */
 }
 
 export enum E_JenkinsUrlType {
