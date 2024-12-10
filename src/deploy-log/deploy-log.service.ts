@@ -81,6 +81,13 @@ export class DeployLogService {
                   E_DeployStatus.aborted,
                 );
                 break;
+              case 'UNSTABLE':
+                this.updateDeployLogStatus(
+                  buildNumber,
+                  jenkinsUrl,
+                  E_DeployStatus.unstable,
+                );
+                break;
             }
             this.schedulerRegistry.getCronJob(name).stop();
           }
