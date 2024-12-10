@@ -14,6 +14,8 @@ import ForGotPassword from './templates/emails/ForgotPassword';
 import TestFinished from './templates/emails/TestFinished';
 import VerifyUserConfirmation from './templates/emails/VerifyUserConfirmation';
 import PostedInquery from './templates/emails/PostedInquery';
+import PendingTestSession from './templates/emails/PendingTestSession';
+
 import { SwType } from 'src/sw-type/sw-type.entity';
 
 @Injectable()
@@ -131,6 +133,49 @@ export class MailService {
       subject: this.EMAIL_HEADER_LOGO + ' Please verify your email address',
       html: htmlEmail,
     });
+  }
+
+  sendPendingTestSessionMail(receiver: User, swInfo: SwVersion): void {
+    const htmlEmail = this.generateReactEmail(
+      PendingTestSession({
+        username: receiver.username,
+        swInfo: swInfo,
+        homepageUrl: this.configService.get<string>('HOMEPAGE_URL'),
+      }),
+    );
+
+    this.mailerService.sendMail({
+      to: receiver.email,
+      from: this.configService.get<string>('SMTP_AUTH_EMAIL'),
+      subject: this.EMAIL_HEADER_LOGO + ' 진행중인 테스트 세션이 있습니다.',
+      html: htmlEmail,
+    });
+    const htmlData =
+      this.HTML_LOGO_IMG +
+      '<div>진행중인 테스트 세션이 있습니다. Version:  <strong>' +
+      swInfo.versionTitle +
+      '</strong></div>';
+    const axiosBody = {
+      type: 'message',
+      attachments: [
+        {
+          contentType:
+            this.configService.get<string>('HOMEPAGE_URL') +
+            `/sw-type/${swInfo.swType.swTypeId}?open=${swInfo.swVersionId}`,
+          content: {
+            $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+            type: 'AdaptiveCard',
+            version: receiver.email,
+            body: [
+              {
+                type: String() + htmlData,
+              },
+            ],
+          },
+        },
+      ],
+    };
+    axios.post(this.TEAMS_URL, axiosBody);
   }
 
   sendAddedAsTesterMail(receiver: User, swInfo: SwVersion): void {
