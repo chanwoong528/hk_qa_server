@@ -78,6 +78,10 @@ export enum E_DeployStatus {
    * "inProgress": false,
    * "result": "UNSTABLE"
    */
+  timeout = 'timeout',
+  /**
+   * 20 minutes after pending
+   */
 }
 
 export enum E_JenkinsUrlType {

@@ -81,6 +81,7 @@ export class DeployLogService {
                   E_DeployStatus.aborted,
                 );
                 break;
+              
               case 'UNSTABLE':
                 this.updateDeployLogStatus(
                   buildNumber,
@@ -111,6 +112,15 @@ export class DeployLogService {
     });
   }
 
+  async getAllDeployLogsPending(): Promise<DeployLog[]> {
+    return await this.deployLogRepository.find({
+      where: {
+        status: E_DeployStatus.pending,
+      },
+      relations: ['jenkinsDeployment'],
+    });
+  }
+
   async createDeployLog(
     param: {
       jenkinsDeploymentId: string;
@@ -123,8 +133,6 @@ export class DeployLogService {
     const user = await this.userService.findOneById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    console.log('>>>> ', param.jenkinsDeploymentId);
-
     const jenkinsDeployment =
       await this.jenkinsDeploymentService.getJenkinsDeploymentById(
         param.jenkinsDeploymentId,
@@ -133,12 +141,6 @@ export class DeployLogService {
     if (!jenkinsDeployment)
       throw new NotFoundException('Jenkins Deployment not found');
 
-    console.log(
-      'jenkinsDeployment.jenkinsUrl',
-      jenkinsDeployment.jenkinsUrl,
-      this.getJenkinsCredentials(jenkinsDeployment.jenkinsUrl).credentialInfo,
-      this.getJenkinsCredentials(jenkinsDeployment.jenkinsUrl).jenkinsCrumb,
-    );
     const fetchNextBuild = await axios.get(
       jenkinsDeployment.jenkinsUrl + E_JenkinsUrlType.GET_nextBuildNumber,
       {
@@ -157,8 +159,6 @@ export class DeployLogService {
     deployLog.user = user;
     deployLog.tag = `${param.tag}-${newBuildNumber}`;
     deployLog.reason = param.reason;
-
-    console.log(jenkinsDeployment.jenkinsUrl);
 
     const fetchPostNewBuild = await axios.post(
       jenkinsDeployment.jenkinsUrl + E_JenkinsUrlType.POST_buildWithParam,
