@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import axios from 'axios';
 import { DeployLogService } from 'src/deploy-log/deploy-log.service';
+import { E_DeployStatus, E_JenkinsUrlType } from 'src/enum';
 import { MailService } from 'src/mail/mail.service';
 import { TestSessionService } from 'src/test-session/test-session.service';
 
@@ -12,7 +15,25 @@ export class BatchServiceService {
     private readonly deployLogService: DeployLogService,
 
     private readonly mailService: MailService,
+
+    private readonly configService: ConfigService,
   ) {}
+
+  private getJenkinsCredentials(jenkinsUrl: string) {
+    return {
+      credentialInfo: {
+        username: jenkinsUrl.includes('https://home-jenkins.hankookilbo.com')
+          ? this.configService.get('JENKINS_USERNAME')
+          : this.configService.get('JENKINS_USERNAME_HERB'),
+        password: jenkinsUrl.includes('https://home-jenkins.hankookilbo.com')
+          ? this.configService.get('JENKINS_API_TOKEN')
+          : this.configService.get('JENKINS_API_TOKEN_HERB'),
+      },
+      jenkinsCrumb: jenkinsUrl.includes('https://home-jenkins.hankookilbo.com')
+        ? this.configService.get('JENKINS_CRUMB')
+        : this.configService.get('JENKINS_CRUMB_HERB'),
+    };
+  }
 
   @Cron(CronExpression.MONDAY_TO_FRIDAY_AT_10AM, { name: 'pendingTestSession' })
   async SendEmailTopendingTestSession() {
@@ -27,10 +48,78 @@ export class BatchServiceService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES, { name: 'pendingDeployLog' })
+  @Cron(`*/1 * * * *`, { name: 'pendingDeployLog' })
   async deployLogPendingResolver() {
     const deployLogs = await this.deployLogService.getAllDeployLogsPending();
 
-    // if createdAt === updatedAt && createdAt is 20 minutes ago, updated status to failed
+    for (const deployLog of deployLogs) {
+      const fetchBuildUrl = `${deployLog.jenkinsDeployment.jenkinsUrl}/${deployLog.buildNumber}${E_JenkinsUrlType.GET_buildList}`;
+      try {
+        const fetchBuildInfo = await axios.get(fetchBuildUrl, {
+          auth: this.getJenkinsCredentials(
+            deployLog.jenkinsDeployment.jenkinsUrl,
+          ).credentialInfo,
+        });
+        const buildInfo = await fetchBuildInfo.data;
+
+        if (!buildInfo.inProgress) {
+          //existing in jenkins build but not in our db
+
+          let deployStatParam: E_DeployStatus;
+          switch (buildInfo.result) {
+            case 'SUCCESS':
+              deployStatParam = E_DeployStatus.success;
+              break;
+            case 'FAILURE':
+              deployStatParam = E_DeployStatus.failed;
+              break;
+            case 'ABORTED':
+              deployStatParam = E_DeployStatus.aborted;
+              break;
+            case 'UNSTABLE':
+              deployStatParam = E_DeployStatus.unstable;
+              break;
+            default:
+              throw new Error('Invalid deploy status');
+          }
+          return await this.deployLogService.updateDeployLogStatus(
+            deployLog.buildNumber,
+            deployLog.jenkinsDeployment.jenkinsUrl,
+            deployStatParam,
+          );
+        }
+
+        throw new Error('buildInfo.inProgress is true');
+      } catch (error) {
+        console.error('error>> ', error.message);
+        const isDeployStuck =
+          deployLog.createdAt.getTime() === deployLog.updatedAt.getTime() &&
+          deployLog.status === E_DeployStatus.pending &&
+          deployLog.createdAt.getTime() + 20 * 60 * 1000 < Date.now();
+
+        if (isDeployStuck) {
+          await this.deployLogService.updateDeployLogStatus(
+            deployLog.buildNumber,
+            deployLog.jenkinsDeployment.jenkinsUrl,
+            E_DeployStatus.timeout,
+          );
+        }
+      }
+
+      //  result: 'SUCCESS',
+
+      // const isDeployStuck =
+      //   deployLog.createdAt === deployLog.updatedAt &&
+      //   deployLog.status === E_DeployStatus.pending &&
+      //   deployLog.createdAt.getTime() + 20 * 60 * 1000 < Date.now();
+
+      // if (isDeployStuck) {
+      //   await this.deployLogService.updateDeployLogStatus(
+      //     deployLog.buildNumber,
+      //     deployLog.jenkinsDeployment.jenkinsUrl,
+      //     E_DeployStatus.timeout,
+      //   );
+      // }
+    }
   }
 }
