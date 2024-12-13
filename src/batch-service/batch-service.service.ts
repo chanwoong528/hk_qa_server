@@ -5,6 +5,7 @@ import axios from 'axios';
 import { DeployLogService } from 'src/deploy-log/deploy-log.service';
 import { E_DeployStatus, E_JenkinsUrlType } from 'src/enum';
 import { MailService } from 'src/mail/mail.service';
+import { SwMaintainerService } from 'src/sw-maintainer/sw-maintainer.service';
 import { TestSessionService } from 'src/test-session/test-session.service';
 
 @Injectable()
@@ -105,21 +106,31 @@ export class BatchServiceService {
           );
         }
       }
-
-      //  result: 'SUCCESS',
-
-      // const isDeployStuck =
-      //   deployLog.createdAt === deployLog.updatedAt &&
-      //   deployLog.status === E_DeployStatus.pending &&
-      //   deployLog.createdAt.getTime() + 20 * 60 * 1000 < Date.now();
-
-      // if (isDeployStuck) {
-      //   await this.deployLogService.updateDeployLogStatus(
-      //     deployLog.buildNumber,
-      //     deployLog.jenkinsDeployment.jenkinsUrl,
-      //     E_DeployStatus.timeout,
-      //   );
-      // }
     }
   }
+
+  // @Cron(
+  //   // `* * * * *`,
+  //   CronExpression.EVERY_10_SECONDS,
+  //   { name: 'healthCheck' },
+  // )
+  // async healthCheck() {
+  //   const isProd = this.configService.get('NODE_ENV') === 'prod';
+  //   const serverUrl = isProd
+  //     ? 'http://ec2-3-36-178-244.ap-northeast-2.compute.amazonaws.com:5000'
+  //     : 'http://localhost:3000';
+
+  //   const response = await axios.get(`${serverUrl}/api/health`);
+  //   const data = await response.data;
+
+  //   if (data.status !== 'OK') {
+  //     const isAdminSwTypeId = isProd
+  //       ? 'cb1aca99-5e4b-4c2d-8ef4-68c10f6df08f'
+  //       : '580fa012-0310-4d02-8fd9-7cff7811dc7b';
+  //   }
+  //   console.log('healthCheck', response.data);
+
+  //   // const response = await axios.get('http://localhost:3000/api/health');
+  //   // console.log('healthCheck', response.data);
+  // }
 }

@@ -30,6 +30,14 @@ export class AppConsumer extends WorkerHost {
       }
       case E_SendToQue.teams: {
         this.logger.log('Start processing job teams ' + job.id);
+        this.mailService.sendTeamsMessage(
+          job.data.user,
+          job.data.url,
+          job.data.htmlMsg,
+        );
+        return {
+          message: 'Teams message sent!',
+        };
       }
     }
   }
