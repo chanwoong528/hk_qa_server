@@ -39,7 +39,15 @@ export class DeployLog {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => JenkinsDeployment, (jenkinsDeployment) => jenkinsDeployment)
+  @ManyToOne(
+    () => JenkinsDeployment,
+    (jenkinsDeployment) => jenkinsDeployment,
+    {
+      eager: true,
+      cascade: true,
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn()
   jenkinsDeployment: JenkinsDeployment;
 

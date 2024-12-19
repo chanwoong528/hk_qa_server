@@ -33,7 +33,11 @@ export class JenkinsDeployment {
   @JoinColumn()
   swType: SwType;
 
-  @OneToMany(() => DeployLog, (deployLog) => deployLog.jenkinsDeployment)
+  @OneToMany(() => DeployLog, (deployLog) => deployLog.jenkinsDeployment, {
+    // eager: true,
+    // cascade: true,
+    // onDelete: 'CASCADE',
+  })
   @JoinColumn()
   deployLogs: DeployLog[];
 }
