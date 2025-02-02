@@ -1,11 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import axios from 'axios';
+import { InjectBrowser } from 'nestjs-playwright';
+import { Browser } from 'playwright';
 import { DeployLogService } from 'src/deploy-log/deploy-log.service';
 import { E_DeployStatus, E_JenkinsUrlType } from 'src/enum';
 import { MailService } from 'src/mail/mail.service';
-import { SwMaintainerService } from 'src/sw-maintainer/sw-maintainer.service';
+
 import { TestSessionService } from 'src/test-session/test-session.service';
 
 @Injectable()
@@ -18,6 +20,9 @@ export class BatchServiceService {
     private readonly mailService: MailService,
 
     private readonly configService: ConfigService,
+
+    @InjectBrowser()
+    private readonly browser: Browser,
   ) {}
 
   private getJenkinsCredentials(jenkinsUrl: string) {
@@ -109,28 +114,22 @@ export class BatchServiceService {
     }
   }
 
-  // @Cron(
-  //   // `* * * * *`,
-  //   CronExpression.EVERY_10_SECONDS,
-  //   { name: 'healthCheck' },
-  // )
-  // async healthCheck() {
-  //   const isProd = this.configService.get('NODE_ENV') === 'prod';
-  //   const serverUrl = isProd
-  //     ? 'http://ec2-3-36-178-244.ap-northeast-2.compute.amazonaws.com:5000'
-  //     : 'http://localhost:3000';
+  @Cron(
+    // `* * * * *`,
+    CronExpression.EVERY_10_SECONDS,
+    { name: 'hk-homepage-monitor' },
+  )
+  async hkHomepageMonitor() {
+    const browser = await this.browser.newContext();
+    const page = await browser.newPage();
+    await page.goto('https://www.hankookilbo.com/');
+    await page.waitForSelector('.tab-list ul li');
 
-  //   const response = await axios.get(`${serverUrl}/api/health`);
-  //   const data = await response.data;
+    // const screenshot = await page.screenshot({ path: 'screenshot.png' });
+    const htmlContent = await page.content();
 
-  //   if (data.status !== 'OK') {
-  //     const isAdminSwTypeId = isProd
-  //       ? 'cb1aca99-5e4b-4c2d-8ef4-68c10f6df08f'
-  //       : '580fa012-0310-4d02-8fd9-7cff7811dc7b';
-  //   }
-  //   console.log('healthCheck', response.data);
+    // const tabListItems = await tabList.locator('li');
 
-  //   // const response = await axios.get('http://localhost:3000/api/health');
-  //   // console.log('healthCheck', response.data);
-  // }
+    console.log('htmlContent>> ', htmlContent);
+  }
 }

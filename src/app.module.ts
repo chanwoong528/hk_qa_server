@@ -42,9 +42,10 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 import { JenkinsDeploymentModule } from './jenkins-deployment/jenkins-deployment.module';
 import { DeployLogModule } from './deploy-log/deploy-log.module';
-import { ScheduleModule } from '@nestjs/schedule';
+
 import { BatchServiceService } from './batch-service/batch-service.service';
 import { BatchServiceModule } from './batch-service/batch-service.module';
+// import { PlaywrightModule } from 'nestjs-playwright';
 
 @Global()
 @Module({
@@ -121,6 +122,14 @@ import { BatchServiceModule } from './batch-service/batch-service.module';
     DeployLogModule,
     BatchServiceModule,
     // EventsModule, //for socket
+    // PlaywrightModule.forRoot(
+    //   {
+    //     headless: true,
+    //     channel: 'chrome',
+    //     isGlobal: true,
+    //   }, // optional, any Playwright launch options here or leave empty for good defaults */,
+    //   'BrowserInstanceName', // optional, can be useful for using Chrome and Firefox in the same project
+    // ),
   ],
   controllers: [AppController],
   providers: [

@@ -1,13 +1,11 @@
 import {
-  Catch,
   ConflictException,
-  HttpException,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { SwVersion } from './sw-version.entity';
-import { QueryFailedError, Repository, UpdateResult } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/user/user.repository';
 import { SwTypeService } from 'src/sw-type/sw-type.service';
@@ -62,7 +60,7 @@ export class SwVersionService {
         throw new NotFoundException('Software Type not found');
       }
 
-      let createdSwVersion = new SwVersion(swVersion);
+      const createdSwVersion = new SwVersion(swVersion);
       createdSwVersion.user = author;
       createdSwVersion.swType = targetSwType;
 
@@ -132,7 +130,7 @@ export class SwVersionService {
     const document = dom.window.document;
     const imgElements = document.querySelectorAll('img');
     for (const editorImg of imgElements) {
-      let imgSize = {
+      const imgSize = {
         ...(editorImg.style.width && {
           w: Number(editorImg.style.width.replace(/px$/, '')),
         }),
