@@ -76,7 +76,12 @@ export class LoggerMiddleware implements NestMiddleware {
         );
       }
 
-      if (statusCode >= 400 && statusCode !== 404 && statusCode !== 401) {
+      if (
+        statusCode >= 400 &&
+        statusCode !== 404 &&
+        statusCode !== 401 &&
+        statusCode !== 409
+      ) {
         const isProd = this.configService.get('NODE_ENV') === 'prod';
 
         const isAdminSwTypeId = isProd
